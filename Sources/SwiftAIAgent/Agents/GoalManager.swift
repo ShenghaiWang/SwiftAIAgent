@@ -36,7 +36,7 @@ public actor GoalManager {
     }
 
     /// Initialise a GoalManager
-    /// Parameters:
+    /// - Parameters:
     ///  - goal: The goal to achieve
     ///  - aiagent: The AI Agent to be responsible for clarifying goal, planning, orchestrating agent workflow.
     public init(goal: String,
@@ -87,7 +87,7 @@ public actor GoalManager {
     }
 
     /// Clarifiy the goal
-    /// Parameters:
+    /// - Parameters:
     ///  - clarifications: Clarifications
     public func set(clarifications: [String]) {
         self.clarifications.append(contentsOf: clarifications)
