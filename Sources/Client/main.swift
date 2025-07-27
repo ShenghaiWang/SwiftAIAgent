@@ -67,11 +67,9 @@ enum AgentWorkflow {
                                  A few agents work on this task.
                                  """)
 
-
         let draftAgent = AIAgent(title: "Draft article",
                                  model: gemini,
                                  context: context,
-
                                  instruction: """
                                  You are an expert in writing articles based on your knowledge.
                                  """)

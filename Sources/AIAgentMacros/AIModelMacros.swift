@@ -10,6 +10,6 @@ public protocol Tracker {
 @attached(extension, conformances: AIModelOutput, names: named(outputSchema))
 public macro AIModelOutput() = #externalMacro(module: "AIAgentMacroDefinitions", type: "AIModelOutputMacro")
 
-/// A macro that trace the json schema for the types it attaches to
+/// A macro helps to trace call stacks
 @attached(body)
 public macro Traced(by tracker: Tracker, message: String = "") = #externalMacro(module: "AIAgentMacroDefinitions", type: "TraceMacro")

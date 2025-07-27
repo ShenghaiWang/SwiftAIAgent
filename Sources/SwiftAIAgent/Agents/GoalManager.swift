@@ -2,6 +2,7 @@ import Foundation
 import GeminiSDK
 import AIAgentMacros
 
+/// The actor managing goal
 public actor GoalManager {
     public enum Error: Swift.Error {
         case noPlan
@@ -34,12 +35,20 @@ public actor GoalManager {
                   apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
     }
 
+    /// Initialise a GoalManager
+    /// Parameters:
+    ///  - goal: The goal to achieve
+    ///  - aiagent: The AI Agent to be responsible for clarifying goal, planning, orchestrating agent workflow.
     public init(goal: String,
                 aiagent: AIAgent) {
         self.goal = goal
         self.aiagent = aiagent
     }
 
+    /// Setup the workflow for the goal and run
+    /// - Returns: The solution output from the agent for the goal
+    /// - Throws: `GoalManager.Error.needClarification(questions: [String])` in case of needing clarification for the goal.
+    /// - Throws: `Swift.Error` in case of any network error or LLM error.
     public func run() async throws -> AIAgentOutput {
         let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
         if !clarification.questions.isEmpty {
@@ -77,6 +86,9 @@ public actor GoalManager {
         }
     }
 
+    /// Clarifiy the goal
+    /// Parameters:
+    ///  - clarifications: Clarifications
     public func set(clarifications: [String]) {
         self.clarifications.append(contentsOf: clarifications)
     }

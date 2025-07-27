@@ -105,3 +105,7 @@ extension AITask: AIModelOutput {
 The project currently supports basic workflows, but it remains in an early phase. 
 Features like tool calling, MCP integration, and other improvements are coming soon. 
 If you’d like to join this mission, feel free to reach out.
+
+## Watch a sample workflow run
+
+[![Watch the video](https://img.youtube.com/vi/te_CZrwrphs/0.jpg)](https://www.youtube.com/watch?v=te_CZrwrphs)
