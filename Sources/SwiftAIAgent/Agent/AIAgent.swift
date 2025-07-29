@@ -34,11 +34,17 @@ public final actor AIAgent: Sendable {
         self.instruction = instruction
     }
 
-    func run(prompt: String, outputSchema: String? = nil) async throws -> AIAgentOutput {
+    var toolDefinitions: [String] {
+        tools.compactMap(\.definition)
+    }
+
+    func run(prompt: String,
+             outputSchema: String? = nil) async throws -> AIAgentOutput {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
         let result = try await model.run(prompt: combinedPrompt,
-                                         outputSchema: outputSchema)
+                                         outputSchema: outputSchema,
+                                         toolSchemas: toolDefinitions)
         await Runtime.shared.set(output: result, for: id, title: title)
         logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.output)\n")
         return result
@@ -52,7 +58,8 @@ public final actor AIAgent: Sendable {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
         let result = try await model.run(prompt: combinedPrompt,
-                                         outputSchema: outputSchema)
+                                         outputSchema: outputSchema,
+                                         toolSchemas: toolDefinitions)
         await Runtime.shared.set(output: result, for: id, title: title)
         logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.output)\n")
         return result

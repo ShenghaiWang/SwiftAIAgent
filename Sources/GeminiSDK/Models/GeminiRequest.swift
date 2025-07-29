@@ -29,88 +29,6 @@ public struct GeminiRequest: Codable {
         let thinkingConfig: ThinkingConfig?
         let mediaResolution: MediaResolution?
 
-        struct Schema: Codable {
-            enum `Type`: String, Codable {
-                case unspecified = "TYPE_UNSPECIFIED"
-                case string = "STRING"
-                case number = "NUMBER"
-                case integer = "INTEGER"
-                case bollean = "BOOLEAN"
-                case array = "ARRAY"
-                case object = "OBJECT"
-                case null = "NULL"
-            }
-            let type: Type
-            let format: String?
-            let title: String?
-            let description: String?
-            let nullable: Bool?
-            let `enum`: [String]?
-            let maxItems: Int?
-            let minItems: Int?
-            let properties: [String: Schema]?
-            let required: [String]?
-            let miniProperties: Int?
-            let maxProperties: Int?
-            let minLength: Int?
-            let maxLength: Int?
-            let pattern: String?
-            let example: String?
-            let anyOf: [Schema]?
-            let propertyOrdering: [String]?
-            let `default`: String?
-            let items: [Schema]?
-            let minimum: Int?
-            let maximum: Int?
-
-            init(type: Type,
-                 format: String? = nil,
-                 title: String? = nil,
-                 description: String? = nil,
-                 nullable: Bool? = nil,
-                 `enum`: [String]? = nil,
-                 maxItems: Int? = nil,
-                 minItems: Int? = nil,
-                 properties: [String : Schema]? = nil,
-                 required: [String]? = nil,
-                 miniProperties: Int? = nil,
-                 maxProperties: Int? = nil,
-                 minLength: Int? = nil,
-                 maxLength: Int? = nil,
-                 pattern: String? = nil,
-                 example: String? = nil,
-                 anyOf: [Schema]? = nil,
-                 propertyOrdering: [String]? = nil,
-                 `default`: String? = nil,
-                 items: [Schema]? = nil,
-                 minimum: Int? = nil,
-                 maximum: Int? = nil
-            ) {
-                self.type = type
-                self.format = format
-                self.title = title
-                self.description = description
-                self.nullable = nullable
-                self.enum = `enum`
-                self.maxItems = maxItems
-                self.minItems = minItems
-                self.properties = properties
-                self.required = required
-                self.miniProperties = miniProperties
-                self.maxProperties = maxProperties
-                self.minLength = minLength
-                self.maxLength = maxLength
-                self.pattern = pattern
-                self.example = example
-                self.anyOf = anyOf
-                self.propertyOrdering = propertyOrdering
-                self.`default` = `default`
-                self.items = items
-                self.minimum = minimum
-                self.maximum = maximum
-            }
-        }
-
         enum Modality: String, Codable {
             case unspecified = "MODALITY_UNSPECIFIED"
             case text = "TEXT"
@@ -191,11 +109,42 @@ public struct GeminiRequest: Codable {
             self.mediaResolution = mediaResolution
         }
     }
-    struct Tool: Codable {
-        // TODO:
+
+    public struct Tool: Codable {
+        public struct FunctionDeclaration: Codable {
+            enum Behavior: String, Codable {
+                case unspecified = "UNSPECIFIED"
+                case blocking = "BLOCKING"
+                case nonBlocking = "NON_BLOCKING"
+            }
+            let name: String
+            let description: String
+            let behavior: Behavior?
+            let parameters: Schema?
+            let parametersJsonSchema: String?
+            let response: Schema?
+            let responseJsonSchema: String?
+        }
+
+        let functionDeclarations: [FunctionDeclaration]?
+//        let googleSearchRetrieval: GoogleSearchRetrieval?
+//        let codeExecution: CodeExecution?
+//        let googleSearch: GoogleSearch?
+//        let urlContext: UrlContext?
     }
     struct ToolConfig: Codable {
-        // TODO:
+        struct FunctionCallingConfig: Codable {
+            enum Mode: String, Codable {
+                case modeUnspecified = "MODE_UNSPECIFIED"
+                case auto = "AUTO"
+                case any = "ANY"
+                case none = "NONE"
+                case validated = "VALIDATED"
+            }
+            let mode: Mode?
+            let allowedFunctionNames: [String]?
+        }
+        let functionCallingConfig: FunctionCallingConfig?
     }
 
     struct SafetySetting: Codable {
@@ -212,13 +161,17 @@ public struct GeminiRequest: Codable {
 }
 
 extension GeminiRequest {
-    init(prompt: String, responseJsonSchema: String? = nil) {
+    init(prompt: String, responseJsonSchema: String? = nil, tools: [Tool] = []) {
         self.contents = [.init(parts: [.init(text: prompt)])]
         self.systemInstruction = nil
-        self.generationConfig = .init(responseMimeType: "application/json",
-                                      responseJsonSchema: responseJsonSchema)
+        if let responseJsonSchema {
+            self.generationConfig = .init(responseMimeType: "application/json",
+                                          responseJsonSchema: responseJsonSchema)
+        } else {
+            self.generationConfig = nil
+        }
         self.cachedContent = nil
-        self.tools = nil
+        self.tools = tools
         self.toolConfig = nil
         self.safetySettings = nil
     }
@@ -233,6 +186,47 @@ extension GeminiRequest.GenerationConfig: Encodable {
             let data = Data(schemaString.utf8)
             let jsonObject = try JSONSerialization.jsonObject(with: data)
             try container.encode(JSONAny(value: jsonObject), forKey: .responseJsonSchema)
+        }
+    }
+}
+
+extension GeminiRequest.Tool.FunctionDeclaration {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(description, forKey: .description)
+        try container.encodeIfPresent(behavior, forKey: .behavior)
+
+        if let schemaString = parametersJsonSchema {
+            let data = Data(schemaString.utf8)
+            let jsonObject = try JSONSerialization.jsonObject(with: data)
+            try container.encode(JSONAny(value: jsonObject), forKey: .parametersJsonSchema)
+        }
+
+        if let schemaString = responseJsonSchema {
+            let data = Data(schemaString.utf8)
+            let jsonObject = try JSONSerialization.jsonObject(with: data)
+            try container.encode(JSONAny(value: jsonObject), forKey: .responseJsonSchema)
+        }
+    }
+}
+
+extension GeminiRequest {
+    var requestingFunctionCalls: Bool {
+        if let tools {
+            tools.map(\.requestingFunctionCalls).reduce(false, { $0 || $1 })
+        } else {
+            false
+        }
+    }
+}
+
+extension GeminiRequest.Tool {
+    var requestingFunctionCalls: Bool {
+        if let functionDeclarations {
+            !functionDeclarations.isEmpty
+        } else {
+            false
         }
     }
 }
