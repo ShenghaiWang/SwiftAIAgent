@@ -17,17 +17,17 @@ public struct Workflow {
     let step: Step
 
     /// Initialise a workflow
-    /// Parameters:
+    /// - Parameters:
     ///  - step: the step to execute in the workflow, which is a recusive definition of step enum.
     public init(step: Step) {
         self.step = step
     }
 
     /// Run the work flow
-    /// Parameters:
+    /// - Parameters:
     ///  - prompt: The prompt to start the workflow
-    /// Returns: The result of the workflow run
-    /// Throws: Any error that encountered in executing the workflow
+    /// - Returns: The result of the workflow run
+    /// - Throws: Any error that encountered in executing the workflow
     public func run(prompt: String) async throws -> AIAgentOutput {
         try await step.run(prompt: prompt)
     }

@@ -13,7 +13,7 @@ public final actor AIAgent: Sendable {
     private(set) var inputs: [UUID] = []
 
     /// Initialise an AI Agent
-    /// Parameters:
+    /// - Parameters:
     ///  - title: The name of the agent
     ///  - model: The LLM to use for the task that assigned to this agent
     ///  - tools: The tools can be used by this agent
@@ -51,7 +51,7 @@ public final actor AIAgent: Sendable {
     }
 
     /// Run agent for the task with the prompt
-    /// Parameters:
+    /// - Parameters:
     ///  - prompt: Along with context, instruction, prompmt defines the task for this agent.
     ///  - outputSchema: The output type, which is used guide LLM for structured output
     public func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type) async throws -> AIAgentOutput {
@@ -83,7 +83,7 @@ public final actor AIAgent: Sendable {
     }
 
     /// In case of agent workflow, use this method to inject ouput from another agent
-    /// Parameters:
+    /// - Parameters:
     ///  - input: the agent ID to be added. The added agent's output will be part of input of this agent.
     public func add(input agentId: UUID) {
         inputs.append(agentId)
