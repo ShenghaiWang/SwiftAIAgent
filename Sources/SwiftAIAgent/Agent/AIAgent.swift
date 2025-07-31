@@ -3,6 +3,8 @@ import AIAgentMacros
 
 /// AIAgent type that wrap llm, context, instruction, tools, mcp servers that can work independently for a single task.
 public final actor AIAgent: Sendable {
+    private let resultTag = "lastest result of agent run of "
+    private let stopTooCallInstruction = "If you can find the answer from the previous agent run, DO NOT RETURN FUNCTIONS TO ALL"
     public let id = UUID()
     let title: String
     let context: AIAgentContext?
@@ -32,21 +34,34 @@ public final actor AIAgent: Sendable {
         self.tools = tools
         self.mcpServers = mcpServers
         self.instruction = instruction
+        inputs.append(id)
     }
 
     var toolDefinitions: [String] {
-        tools.compactMap(\.definition)
+        tools.flatMap {
+            type(of: $0).toolSchemas
+        }
     }
 
-    func run(prompt: String,
-             outputSchema: String? = nil) async throws -> AIAgentOutput {
+    public func run(prompt: String,
+                    outputSchema: String? = nil) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
-        let result = try await model.run(prompt: combinedPrompt,
+        var result = try await model.run(prompt: combinedPrompt,
                                          outputSchema: outputSchema,
                                          toolSchemas: toolDefinitions)
         await Runtime.shared.set(output: result, for: id, title: title)
-        logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.output)\n")
+        let allFunctionCalls = result.allFunctionCalls
+        if !allFunctionCalls.isEmpty {
+            result = result.filter { if case .functionCalls = $0 { false } else { true } }
+            logger.debug("\n===Agent ID\(id)===\n===Calling Tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
+            result += try await callTools(with: allFunctionCalls)
+            await Runtime.shared.set(output: result, for: id, title: title)
+            logger.debug("\n===Agent ID\(id)===\n===Rerun agent with result from tools===\n")
+            let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
+            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema)
+        }
+        logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.allTexts)\n")
         return result
     }
 
@@ -54,14 +69,24 @@ public final actor AIAgent: Sendable {
     /// - Parameters:
     ///  - prompt: Along with context, instruction, prompmt defines the task for this agent.
     ///  - outputSchema: The output type, which is used guide LLM for structured output
-    public func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type) async throws -> AIAgentOutput {
+    public func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
-        let result = try await model.run(prompt: combinedPrompt,
+        var result = try await model.run(prompt: combinedPrompt,
                                          outputSchema: outputSchema,
                                          toolSchemas: toolDefinitions)
         await Runtime.shared.set(output: result, for: id, title: title)
-        logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.output)\n")
+        let allFunctionCalls = result.allFunctionCalls
+        if !allFunctionCalls.isEmpty {
+            result = result.filter { if case .functionCalls = $0 { false } else { true } }
+            logger.debug("\n===Agent ID\(id)===\n===Calling Tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
+            result += try await callTools(with: allFunctionCalls)
+            await Runtime.shared.set(output: result, for: id, title: title)
+            logger.debug("\n===Agent ID\(id)===\n===Rerun agent with result from tools===\n")
+            let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
+            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema)
+        }
+        logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.allTexts)\n")
         return result
     }
 
@@ -75,7 +100,7 @@ public final actor AIAgent: Sendable {
         }
         for uuid in inputs {
             if let cache = await Runtime.shared.output(of: uuid) {
-                contents.append("<\(cache.title)>\(cache.output.output)</\(cache.title)>")
+                contents.append("<\(resultTag) \(cache.title)>\(cache.output.allTexts)</\(resultTag) \(cache.title))>")
             }
         }
         contents.append(prompt)
@@ -87,5 +112,23 @@ public final actor AIAgent: Sendable {
     ///  - input: the agent ID to be added. The added agent's output will be part of input of this agent.
     public func add(input agentId: UUID) {
         inputs.append(agentId)
+    }
+
+    private func callTools(with allFunctionCalls: [String]) async throws -> [AIAgentOutput] {
+        let valueForToolCallings = allFunctionCalls.compactMap(ValueForToolCalling.init(value:))
+        var results: [AIAgentOutput] = []
+        for valueForToolCalling in valueForToolCallings {
+            for tool in tools {
+                let callResult = try await tool.call(valueForToolCalling.name, args: valueForToolCalling.args)
+                results.append(
+                    .text(
+                        """
+                        Result of calling function \(valueForToolCalling.name):
+                        \(callResult ?? "")
+                        """
+                    ))
+            }
+        }
+        return results
     }
 }

@@ -1,9 +1,3 @@
-public protocol AIAgentTool: Sendable {
-    var definition: String? { get }
-}
+import AIAgentMacros
 
-extension AIAgentTool {
-    public var definition: String? {
-        nil
-    }
-}
+public typealias AIAgentTool = AITool

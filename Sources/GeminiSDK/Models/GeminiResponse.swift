@@ -3,7 +3,7 @@ import Foundation
 public struct GeminiResponse: Decodable {
     struct Candidate: Decodable {
         struct Content: Decodable {
-            struct Part: Codable {
+            struct Part {
 //                struct FunctionCall: Codable {
 //                    let id: String?
 //                    let name: String?
@@ -71,5 +71,13 @@ extension Data {
         var functionCallStrings: [String] = []
         findFunctionCalls(in: jsonObject, results: &functionCallStrings)
         return functionCallStrings
+    }
+}
+
+extension GeminiResponse.Candidate.Content.Part: Codable {
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        text = try? container.decode(String.self, forKey: .text)
+        functionCall = nil
     }
 }

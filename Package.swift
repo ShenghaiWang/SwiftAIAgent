@@ -38,6 +38,7 @@ let package = Package(
               .testTarget(name: "AIAgentMacrosTests",
                           dependencies: ["AIAgentMacros",
                                          .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                                         .product(name: "SwiftParser", package: "swift-syntax"),
                           ]),
               .testTarget(name: "SwiftAIAgentTests",
                           dependencies: ["SwiftAIAgent"]),

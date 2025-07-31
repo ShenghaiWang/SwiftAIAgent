@@ -19,11 +19,7 @@ struct GeminiSDKTests {
 //            prompt: "What's the weather like today in Sydney?",
 //            tools: [.init(functionDeclarations: [.init(name: "getWeather",
 //                                                       description: "Find the weather in the specified city",
-//                                                       behavior: .none,
-//                                                       parameters: nil,
-//                                                       parametersJsonSchema: Location.outputSchema,
-//                                                       response: nil,
-//                                                       responseJsonSchema: Location.outputSchema)])])
+//                                                       parametersJsonSchema: Location.outputSchema)])])
 //        #expect(!response.isEmpty)
     }
 
@@ -70,11 +66,7 @@ struct GeminiSDKTests {
     func requestingFunctionCalls() throws {
         let request = GeminiRequest(prompt: "", tools: [.init(functionDeclarations: [.init(name: "getWeather",
                                                                                            description: "Find the weather in the specified city",
-                                                                                           behavior: .none,
-                                                                                           parameters: nil,
-                                                                                           parametersJsonSchema: Location.outputSchema,
-                                                                                           response: nil,
-                                                                                           responseJsonSchema: Location.outputSchema)])])
+                                                                                           parametersJsonSchema: Location.outputSchema)])])
         #expect(request.requestingFunctionCalls)
     }
 }

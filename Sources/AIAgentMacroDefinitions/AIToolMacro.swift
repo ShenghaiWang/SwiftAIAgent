@@ -27,24 +27,105 @@ public struct AIToolMacro: ExtensionMacro {
             return []
         }
 
-        let toolSchemas = declaration
+        let functions = declaration
             .memberBlock
             .members
-            .compactMap { $0.decl.as(FunctionDeclSyntax.self)?.toolSchema }
-
-        let result: DeclSyntax =
-            #"""
-            """
-            \#(raw: toolSchemas)
-            """
-            """#
+            .compactMap { $0.decl.as(FunctionDeclSyntax.self) }
+            .filter { !$0.modifiers.compactMap(\.name.text).contains("private") }
 
         let extensionDecl = try ExtensionDeclSyntax("extension \(type.trimmed): AITool") {
             """
-            static var toolSchemas: [String] { \(raw: result) }
+            static var toolSchemas: [String] { \(raw: toolSchemaDecl(for: functions)) }
+            
+            var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
+            
+            func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? { \(raw: call(for: functions)) }
             """
         }
 
         return [extensionDecl]
+    }
+
+    private static func toolSchemaDecl(for functions: [FunctionDeclSyntax]) -> DeclSyntax {
+        let toolSchemas = functions
+            .compactMap { $0.toolSchema }
+            .map { name, description, parametersJsonSchema in
+                """
+                {
+                    "name": "\(name)",
+                    "description": "\(description)",
+                    "parametersJsonSchema": \(parametersJsonSchema)
+                }
+                """
+            }
+            .map {
+                #"""
+                """
+                \#($0.compactJson)
+                """
+                """#
+            }.joined(separator: ",\n")
+
+        return
+            #"""
+            [
+            \#(raw: toolSchemas)
+            ]
+            """#
+    }
+
+    private static func methodMap(for functions: [FunctionDeclSyntax]) -> DeclSyntax {
+        let entries = functions.map { function in
+            let name = function.name.text
+            let paramTypes = function.signature.parameterClause.parameters
+                .map { param in
+                    param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                .joined(separator: ", ")
+            let returnType = function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void"
+            let typeCast = "(\(paramTypes)) -> \(returnType)"
+            return #""\#(name)": self.\#(name) as \#(typeCast)"#
+        }
+        let dictBody = entries.joined(separator: ",\n")
+        return
+               #"""
+               [
+               \#(raw: dictBody)
+               ]
+               """#
+    }
+
+    private static func call(for functions: [FunctionDeclSyntax]) -> DeclSyntax {
+        let cases = functions.map { function in
+            let name = function.name.text
+            let params = function.signature.parameterClause.parameters
+            let paramCasts = params.enumerated().map { idx, param in
+                let type = param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                let label = param.firstName.text
+                return "let data = args[\"\(label)\"], let \(label) = try? JSONDecoder().decode(\(type).self, from: data)"
+            }.joined(separator: ",\n")
+            let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
+            let fnType = "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) -> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
+            let guardArgs = params.isEmpty ? "" :
+                """
+                guard \(paramCasts) else { return nil }
+                """
+            let callArgs = params.isEmpty ? "" : paramNames
+            return
+                """
+                case "\(name)":
+                    guard let fn = methodMap[methodName] as? \(fnType) else { return nil }
+                    \(guardArgs)
+                    return fn(\(callArgs))
+                """
+        }.joined(separator: "\n")
+
+        return #"""
+            switch methodName {
+            \#(raw: cases)
+            default:
+                return nil
+            }
+            """#
     }
 }

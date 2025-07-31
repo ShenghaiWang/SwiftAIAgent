@@ -93,7 +93,7 @@ enum AgentWorkflow {
         let workflow = Workflow(step: .sequence([draftStep, reviewStep, finaliseStep]))
 
         let result = try await workflow.run(prompt: "Let's write this artile")
-        print(result.output)
+        print(result.allTexts)
     }
 
     private func ruanAutomaticFlow() async throws {
@@ -102,7 +102,6 @@ enum AgentWorkflow {
         try await autoWorkflow.run()
     }
 }
-
 
 enum MCPConnection {
     case mcpxcodebuild
@@ -170,8 +169,39 @@ enum MCPConnection {
     }
 }
 
+enum ToolCalling {
+    @AITool
+    struct ToolStruct {
+        /// Get weather of the city
+        /// - Parameters:
+        ///  - city: The city
+        /// - Returns: Weather of the city
+        func getWeather(city: String) -> String {
+            "It's raining in Sydney"
+        }
+    }
+
+    static func run() async throws {
+        let gemini = GeminiSDK(model: "gemini-2.5-flash",
+                               apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+        let context = AIAgentContext("Get weather")
+        let agent = AIAgent(title: "Weahter Agent",
+                            model: gemini,
+                            tools: [ToolStruct()],
+                            context: context,
+                            instruction: "")
+        let result = try await agent.run(prompt: "Get weather for Sydney")
+        print(result)
+    }
+}
+
+// MCP connection example
 //try await MCPConnection.github.connect()
 //try await MCPConnection.mcpxcodebuild.connect()
-//
+
+// Workflow example
 //try await AgentWorkflow.manaul.run()
-try await AgentWorkflow.automatic.run()
+//try await AgentWorkflow.automatic.run()
+
+// Tool calling example
+try await ToolCalling.run()

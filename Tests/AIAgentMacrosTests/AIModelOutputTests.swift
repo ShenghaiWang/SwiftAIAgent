@@ -147,4 +147,36 @@ struct AIModelOutputTests {
                         """#
         #expect(transformedSF.description == expectedDescription)
     }
+
+    @Test
+    func testObjectSchema() {
+        let source: SourceFileSyntax =
+                        """
+                        @AIModelOutput
+                        struct TestStruct: Codable {
+                            let value: Int
+                            let innerStruct: InnerStruct
+                        }
+                        """
+        let transformedSF = source.expand(macros: ["AIModelOutput": AIModelOutputMacro.self]) { _ in
+            BasicMacroExpansionContext(sourceFiles: [source: file])
+        }
+        let expectedDescription =
+                        #"""
+
+                        struct TestStruct: Codable {
+                            let value: Int
+                            let innerStruct: InnerStruct
+                        }
+
+                        extension TestStruct: AIModelOutput {
+                            static var outputSchema: String {
+                                """
+                                {"type":"object","description":"","properties":{"value":{"type":"number","description":""},"innerStruct":\(InnerStruct.outputSchema)},"required":["value","innerStruct"]}
+                                """
+                            }
+                        }
+                        """#
+        #expect(transformedSF.description == expectedDescription)
+    }
 }

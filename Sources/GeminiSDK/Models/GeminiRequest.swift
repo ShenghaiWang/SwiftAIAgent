@@ -117,13 +117,26 @@ public struct GeminiRequest: Codable {
                 case blocking = "BLOCKING"
                 case nonBlocking = "NON_BLOCKING"
             }
-            let name: String
-            let description: String
+            public let name: String
+            public let description: String
             let behavior: Behavior?
             let parameters: Schema?
-            let parametersJsonSchema: String?
+            public let parametersJsonSchema: String?
             let response: Schema?
-            let responseJsonSchema: String?
+            public let responseJsonSchema: String?
+
+            public init(name: String,
+                        description: String,
+                        parametersJsonSchema: String?,
+                        responseJsonSchema: String? = nil) {
+                self.name = name
+                self.description = description
+                self.behavior = .unspecified
+                self.parameters = nil
+                self.parametersJsonSchema = parametersJsonSchema
+                self.response = nil
+                self.responseJsonSchema = responseJsonSchema
+            }
         }
 
         let functionDeclarations: [FunctionDeclaration]?
@@ -131,6 +144,9 @@ public struct GeminiRequest: Codable {
 //        let codeExecution: CodeExecution?
 //        let googleSearch: GoogleSearch?
 //        let urlContext: UrlContext?
+        public init(functionDeclarations: [FunctionDeclaration]?) {
+            self.functionDeclarations = functionDeclarations
+        }
     }
     struct ToolConfig: Codable {
         struct FunctionCallingConfig: Codable {

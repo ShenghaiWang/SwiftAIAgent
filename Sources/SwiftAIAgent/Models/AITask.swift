@@ -19,7 +19,7 @@ struct AITask {
     let subTasks: [AISubTask]?
 }
 
-// Have to have this as AIModelOutput cannot generate outputScheme recursively
+// Have to have this as AIModelOutput cannot generate outputSchema recursively
 /// Task that is broken down from a goal
 @AIModelOutput
 struct AISubTask {

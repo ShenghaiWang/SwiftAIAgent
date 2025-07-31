@@ -2,79 +2,65 @@ import Foundation
 import SwiftSyntax
 
 extension FunctionDeclSyntax {
-    var docComments: [String] {
-        leadingTrivia.compactMap {
-            if case let .docLineComment(text) = $0 {
-                return text.replacingOccurrences(of: "///", with: "").trimmingCharacters(in: .whitespaces)
-            }
-            return nil
+    private func parseParameter(from line: String, prefixToRemove: String) -> (name: String, description: String)? {
+        let paramLine = line.dropFirst(prefixToRemove.count).trimmingCharacters(in: .whitespaces)
+        if let colonIndex = paramLine.firstIndex(of: ":") {
+            let name = paramLine[..<colonIndex].trimmingCharacters(in: .whitespaces)
+            let desc = paramLine[paramLine.index(after: colonIndex)...].trimmingCharacters(in: .whitespaces)
+            return (name: String(name), description: desc)
         }
+        return nil
     }
     
     var parsedDoc: (description: String?, parameters: [String: String], returns: String?) {
         var description: String?
         var parameters: [String: String] = [:]
         var returns: String?
-        
-        for line in docComments {
-            if line.hasPrefix("- parameter") {
-                // Example: "- parameter city: The name of the city"
-                let paramLine = line.dropFirst("- parameter".count).trimmingCharacters(in: .whitespaces)
-                if let colonIndex = paramLine.firstIndex(of: ":") {
-                    let name = paramLine[..<colonIndex].trimmingCharacters(in: .whitespaces)
-                    let desc = paramLine[paramLine.index(after: colonIndex)...].trimmingCharacters(in: .whitespaces)
-                    parameters[String(name)] = desc
+        var inParametersSection = false
+
+        for line in leadingTrivia.docLineComments {
+            if line.hasPrefix("- Parameter") && !line.hasPrefix("- Parameters:") {
+                inParametersSection = false
+                if let (name, description) = parseParameter(from: line, prefixToRemove: "- Parameter") {
+                    parameters[name] = description
                 }
-            } else if line.hasPrefix("- returns:") {
-                returns = line.dropFirst("- returns:".count).trimmingCharacters(in: .whitespaces)
-            } else if description == nil && !line.isEmpty {
+            } else if line.hasPrefix("- Parameters:") {
+                inParametersSection = true
+            } else if line.hasPrefix("- Returns:") {
+                inParametersSection = false
+                returns = line.dropFirst("- Returns:".count).trimmingCharacters(in: .whitespaces)
+            } else if description == nil && !line.isEmpty && !line.hasPrefix("-") {
+                inParametersSection = false
                 description = line
+            } else if line.hasPrefix("-") && inParametersSection {
+                if let (name, description) = parseParameter(from: line, prefixToRemove: "_") {
+                    parameters[name] = description
+                }
             }
         }
         return (description, parameters, returns)
     }
-    
-    var toolSchema: String? {
-        """
-        {
-            "name": "\(name.text)",
-            "description": "\(1)",
-            "parametersJsonSchema": {
-                "properties": {
-                    
+
+    var toolSchema: (name: String, description: String, parametersJsonSchema: String)? {
+        let parsedDoc = parsedDoc
+        let parameters = signature.parameterClause.parameters
+            .compactMap {
+                $0.parameterSchema(description: parsedDoc.parameters[$0.firstName.text] ?? "")
+            }
+        let requiredParameters = parameters.filter(\.required).map({ "\"\($0.name)\"" }).joined(separator: ",")
+        return (
+            name: name.text,
+            description: parsedDoc.description ?? "",
+            parametersJsonSchema:
+                """
+                {
+                    "type": "object",
+                    "required": [\(requiredParameters)],
+                    "properties": {
+                        \(parameters.compactMap(\.schema).joined(separator: ","))
+                    }
                 }
-            },
-            "type": "object",
-            "required": ["city"],
-        }
-        """
+                """
+        )
     }
 }
-/*
-{
-          "name": "getWeather",
-          "responseJsonSchema": {
-            "properties": {
-              "city": {
-                "type": "string",
-                "description": "the name of the city"
-              }
-            },
-            "type": "object",
-            "required": ["city"],
-            "description": "The location parameter for getWeather function"
-          },
-          "parametersJsonSchema": {
-            "properties": {
-              "city": {
-                "description": "the name of the city",
-                "type": "string"
-              }
-            },
-            "type": "object",
-            "required": ["city"],
-            "description": "The location parameter for getWeather function"
-          },
-          "description": "Find the weather in the specified city"
-        }
-*/
