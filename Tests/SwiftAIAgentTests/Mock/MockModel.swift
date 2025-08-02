@@ -3,9 +3,9 @@ import AIAgentMacros
 @testable import SwiftAIAgent
 
 struct MockModel: AIAgentModel {
-    func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type) async throws -> AIAgentOutput {
+    func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type?, toolSchemas: [String]? = nil) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
-        return AIAgentOutput(result: result)
+        return [.text(result)]
     }
 
     private let id: Int
@@ -14,9 +14,9 @@ struct MockModel: AIAgentModel {
         self.id = id
     }
 
-    public func run(prompt: String, outputSchema: String?) async throws -> AIAgentOutput {
+    public func run(prompt: String, outputSchema: String?, toolSchemas: [String]? = nil) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
-        return AIAgentOutput(result: result)
+        return [.text(result)]
     }
 
     func textGeneration(prompt: String) async throws -> String {

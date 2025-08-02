@@ -1,3 +1,3 @@
-public protocol AIAgentTool: Sendable {
+import AIAgentMacros
 
-}
+public typealias AIAgentTool = AITool

@@ -49,7 +49,7 @@ public actor GoalManager {
     /// - Returns: The solution output from the agent for the goal
     /// - Throws: `GoalManager.Error.needClarification(questions: [String])` in case of needing clarification for the goal.
     /// - Throws: `Swift.Error` in case of any network error or LLM error.
-    public func run() async throws -> AIAgentOutput {
+    public func run() async throws -> [AIAgentOutput] {
         let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
         if !clarification.questions.isEmpty {
             throw Error.needClarification(questions: clarification.questions)
@@ -59,27 +59,10 @@ public actor GoalManager {
         return try await workflow.run(prompt: "kick off the task")
     }
 
-    func plan() async throws -> AITask {
-        let result = try await aiagent.run(prompt: planInstructions, outputSchema: AITask.self)
-        if let task = result.result as? AITask {
-            return task
-        } else {
-            throw Error.wrongResponseFormatFromAI
-        }
-    }
-
-    func clarify() async throws -> AIGoalClarification {
-        let result = try await aiagent.run(prompt: clarifyInstructions, outputSchema: AIGoalClarification.self)
-        if let task = result.result as? AIGoalClarification {
-            return task
-        } else {
-            throw Error.wrongResponseFormatFromAI
-        }
-    }
-
     private func runAICommand<T: AIModelOutput>(_ command: String) async throws -> T {
         let result = try await aiagent.run(prompt: command, outputSchema: T.self)
-        if let task = result.result as? T {
+        if case let .strongTypedValue(result) = result.allStrongTypedValues.first,
+           let task = result as? T {
             return task
         } else {
             throw Error.wrongResponseFormatFromAI

@@ -100,6 +100,40 @@ extension AITask: AIModelOutput {
 }
 ```
 
+## Function/Tool Calling
+
+### Define tools
+
+Once mark a type using `@AITool`, all the functions of that type that are not private will be made availbe to LLM. 
+
+```swift
+@AITool
+struct ToolStruct {
+    /// Get weather of the city
+    /// - Parameters:
+    ///  - city: The city
+    /// - Returns: Weather of the city
+    func getWeather(city: String) -> String {
+        "It's raining in Sydney"
+    }
+}
+```
+
+### Configure tool to agent and run it by agent automatically if needed.
+
+```swift
+let gemini = GeminiSDK(model: "gemini-2.5-flash",
+                       apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+let context = AIAgentContext("Get weather")
+let agent = AIAgent(title: "Weahter Agent",
+                    model: gemini,
+                    tools: [ToolStruct()],
+                    context: context,
+                    instruction: "")
+let result = try await agent.run(prompt: "Get weather for Sydney")
+print(result)
+```
+
 ## Early stage
 
 The project currently supports basic workflows, but it remains in an early phase. 

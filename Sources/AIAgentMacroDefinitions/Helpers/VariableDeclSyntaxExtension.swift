@@ -3,24 +3,29 @@ import SwiftSyntax
 extension VariableDeclSyntax {
     var outputModelSchema: PropertySchema? {
         // TODO: Refine it to setter only?
-        // TODO: Use propertyType.jsonType.rawValue to chain type defs
         guard bindings.first?.accessorBlock == nil else { return nil }
-        guard let shcemaChain = bindings.first?.typeAnnotation?.schemaChain else { return nil }
+        guard let schemaChain = bindings.first?.typeAnnotation?.schemaChain else { return nil }
         let description = leadingTrivia.docLineComment
         let propertyName = bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text ?? ""
-        let itemsSchema: String = if let itemsType = shcemaChain.itemsType { ",\"items\": \(itemsType)" } else  { "" }
-        let schema =
-                      """
-                          "\(propertyName)": {
-                            "type": "\(shcemaChain.type.jsonType.rawValue)",
-                            "description": "\(description)"
-                            \(itemsSchema)
-                          }
-                      """
+        let itemsSchema: String = if let itemsType = schemaChain.itemsType { ",\"items\": \(itemsType)" } else  { "" }
+        let schema: String =
+        if ![JSONType.object, .null].contains(schemaChain.type.jsonType) {
+            """
+                "\(propertyName)": {
+                    "type": "\(schemaChain.type.jsonType.rawValue)",
+                    "description": "\(description)"
+                    \(itemsSchema)
+                }
+            """
+        } else {
+            #"""
+                "\#(propertyName)":\(\#(schemaChain.type).outputSchema)
+            """#
+        }
 
         return PropertySchema(name: propertyName,
                               schema: schema,
-                              required: shcemaChain.required,
+                              required: schemaChain.required,
                               description: description)
     }
 }
