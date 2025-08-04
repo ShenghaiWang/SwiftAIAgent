@@ -1,7 +1,7 @@
 import Foundation
 
-struct Schema: Codable {
-    enum `Type`: String, Codable {
+public struct Schema: Codable {
+    public enum `Type`: String, Codable {
         case unspecified = "TYPE_UNSPECIFIED"
         case string = "STRING"
         case number = "NUMBER"
@@ -34,7 +34,7 @@ struct Schema: Codable {
     let minimum: Int?
     let maximum: Int?
 
-    init(type: Type,
+    public init(type: Type,
          format: String? = nil,
          title: String? = nil,
          description: String? = nil,

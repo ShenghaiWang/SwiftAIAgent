@@ -1,14 +1,14 @@
 import Foundation
 
 public struct GeminiRequest: Codable {
-    struct Content: Codable {
-        struct Part: Codable {
+    public struct Content: Codable {
+        public struct Part: Codable {
             let text: String
         }
         let parts: [Part]
     }
 
-    struct GenerationConfig: Decodable {
+    public struct GenerationConfig: Decodable {
         let stopSequences: [String]?
         let responseMimeType: String?
         let responseSchema: Schema?
@@ -29,47 +29,47 @@ public struct GeminiRequest: Codable {
         let thinkingConfig: ThinkingConfig?
         let mediaResolution: MediaResolution?
 
-        enum Modality: String, Codable {
+        public enum Modality: String, Codable {
             case unspecified = "MODALITY_UNSPECIFIED"
             case text = "TEXT"
             case image = "IMAGE"
             case audio = "AUDIO"
         }
 
-        struct SpeechConfig: Codable {
+        public struct SpeechConfig: Codable {
             let voiceConfig: VoiceConfig
             let multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig
             let languageCode: String
         }
 
-        struct VoiceConfig: Codable {
-            struct PrebuiltVoiceConfig: Codable {
+        public struct VoiceConfig: Codable {
+            public struct PrebuiltVoiceConfig: Codable {
                 let voiceName: String
             }
             let prebuiltVoiceConfig: PrebuiltVoiceConfig?
         }
 
-        struct MultiSpeakerVoiceConfig: Codable {
-            struct SpeakerVoiceConfig: Codable {
+        public struct MultiSpeakerVoiceConfig: Codable {
+            public struct SpeakerVoiceConfig: Codable {
                 let speaker: String
                 let voiceConfig: VoiceConfig
             }
             let speakerVoiceConfigs: [SpeakerVoiceConfig]?
         }
 
-        struct ThinkingConfig: Codable {
+        public struct ThinkingConfig: Codable {
             let includeThoughts: Bool
             let thinkingBudget: Int?
         }
 
-        enum MediaResolution: String, Codable {
+        public enum MediaResolution: String, Codable {
             case unspecified = "MEDIA_RESOLUTION_UNSPECIFIED"
             case low = "MEDIA_RESOLUTION_LOW"
             case medium = "MEDIA_RESOLUTION_MEDIUM"
             case high = "MEDIA_RESOLUTION_HIGH"
         }
 
-        init(stopSequences: [String]? = nil,
+        public init(stopSequences: [String]? = nil,
              responseMimeType: String? = nil,
              responseSchema: Schema? = nil,
              responseJsonSchema: String? = nil,
@@ -117,41 +117,74 @@ public struct GeminiRequest: Codable {
                 case blocking = "BLOCKING"
                 case nonBlocking = "NON_BLOCKING"
             }
-            public let name: String
-            public let description: String
+            let name: String
+            let description: String
             let behavior: Behavior?
             let parameters: Schema?
-            public let parametersJsonSchema: String?
+            let parametersJsonSchema: String?
             let response: Schema?
-            public let responseJsonSchema: String?
+            let responseJsonSchema: String?
 
             public init(name: String,
                         description: String,
                         parametersJsonSchema: String?,
-                        responseJsonSchema: String? = nil) {
+                        responseJsonSchema: String? = nil,
+                        parameters: Schema? = nil,
+                        response: Schema? = nil) {
                 self.name = name
                 self.description = description
                 self.behavior = .unspecified
-                self.parameters = nil
                 self.parametersJsonSchema = parametersJsonSchema
-                self.response = nil
                 self.responseJsonSchema = responseJsonSchema
+                self.parameters = parameters
+                self.response = response
             }
         }
 
+        public struct GoogleSearchRetrieval: Codable {
+            public enum Mode: String, Codable {
+                case unspecified = "MODE_UNSPECIFIED"
+                case dynamic = "MODE_DYNAMIC"
+            }
+            let mode: Mode
+            let dynamicThreshold: Double
+        }
+
+        public struct CodeExecution: Codable {
+        }
+
+        public struct GoogleSearch: Codable {
+            public struct Inteval: Codable {
+                let startTime: String
+                let endTime: String
+            }
+            let timeRangeFilter: Inteval
+        }
+
+        public struct UrlContext: Codable {
+        }
+
         let functionDeclarations: [FunctionDeclaration]?
-//        let googleSearchRetrieval: GoogleSearchRetrieval?
-//        let codeExecution: CodeExecution?
-//        let googleSearch: GoogleSearch?
-//        let urlContext: UrlContext?
-        public init(functionDeclarations: [FunctionDeclaration]?) {
+        let googleSearchRetrieval: GoogleSearchRetrieval?
+        let codeExecution: CodeExecution?
+        let googleSearch: GoogleSearch?
+        let urlContext: UrlContext?
+        public init(functionDeclarations: [FunctionDeclaration]? = nil,
+                    googleSearchRetrieval: GoogleSearchRetrieval? = nil,
+                    codeExecution: CodeExecution? = nil,
+                    googleSearch: GoogleSearch? = nil,
+                    urlContext: UrlContext? = nil) {
             self.functionDeclarations = functionDeclarations
+            self.googleSearchRetrieval = googleSearchRetrieval
+            self.codeExecution = codeExecution
+            self.googleSearch = googleSearch
+            self.urlContext = urlContext
         }
     }
-    struct ToolConfig: Codable {
-        struct FunctionCallingConfig: Codable {
-            enum Mode: String, Codable {
-                case modeUnspecified = "MODE_UNSPECIFIED"
+    public struct ToolConfig: Codable {
+        public struct FunctionCallingConfig: Codable {
+            public enum Mode: String, Codable {
+                case unspecified = "MODE_UNSPECIFIED"
                 case auto = "AUTO"
                 case any = "ANY"
                 case none = "NONE"
@@ -163,8 +196,31 @@ public struct GeminiRequest: Codable {
         let functionCallingConfig: FunctionCallingConfig?
     }
 
-    struct SafetySetting: Codable {
-        // TODO:
+    public struct SafetySetting: Codable {
+        public enum HarmCategory: String, Codable {
+            case unspecified = "HARM_CATEGORY_UNSPECIFIED"
+            case derogatory = "HARM_CATEGORY_DEROGATORY"
+            case toxicity = "HARM_CATEGORY_TOXICITY"
+            case violence = "HARM_CATEGORY_VIOLENCE"
+            case sexual = "HARM_CATEGORY_SEXUAL"
+            case medical = "HARM_CATEGORY_MEDICAL"
+            case dangerous = "HARM_CATEGORY_DANGEROUS"
+            case harassment = "HARM_CATEGORY_HARASSMENT"
+            case hateSpeech = "HARM_CATEGORY_HATE_SPEECH"
+            case explicit = "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+            case dangerousCpntent = "HARM_CATEGORY_DANGEROUS_CONTENT"
+            case integrity = "HARM_CATEGORY_CIVIC_INTEGRITY"
+        }
+        public enum HarmBlockThreshold: String, Codable {
+            case unspecified = "HARM_BLOCK_THRESHOLD_UNSPECIFIED"
+            case low = "BLOCK_LOW_AND_ABOVE"
+            case medium = "BLOCK_MEDIUM_AND_ABOVE"
+            case high = "BLOCK_ONLY_HIGH"
+            case none = "BLOCK_NONE"
+            case off = "OFF"
+        }
+        let category: HarmCategory
+        let threshold: HarmBlockThreshold
     }
 
     let contents: [Content]
@@ -194,7 +250,7 @@ extension GeminiRequest {
 }
 
 extension GeminiRequest.GenerationConfig: Encodable {
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(responseMimeType, forKey: .responseMimeType)
 
@@ -229,20 +285,14 @@ extension GeminiRequest.Tool.FunctionDeclaration {
 
 extension GeminiRequest {
     var requestingFunctionCalls: Bool {
-        if let tools {
-            tools.map(\.requestingFunctionCalls).reduce(false, { $0 || $1 })
-        } else {
-            false
-        }
+        guard let tools else { return false }
+        return tools.map(\.requestingFunctionCalls).reduce(false, { $0 || $1 })
     }
 }
 
 extension GeminiRequest.Tool {
     var requestingFunctionCalls: Bool {
-        if let functionDeclarations {
-            !functionDeclarations.isEmpty
-        } else {
-            false
-        }
+        guard let functionDeclarations else { return false }
+        return !functionDeclarations.isEmpty
     }
 }

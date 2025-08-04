@@ -1,5 +1,6 @@
 import Testing
 @testable import SwiftAIAgent
+@testable import GeminiSDK
 
 @Suite("Testing function calling")
 struct FuncationCallingTests {
