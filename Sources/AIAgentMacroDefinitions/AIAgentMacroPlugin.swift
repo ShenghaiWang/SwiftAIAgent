@@ -2,7 +2,7 @@ import SwiftCompilerPlugin
 import SwiftSyntaxMacros
 
 @main
-struct AIAgentMacroDefsPlugin: CompilerPlugin {
+struct AIAgentMacroPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         AIModelOutputMacro.self,
         TraceMacro.self,
