@@ -4,6 +4,8 @@ public enum GeminiOutput: Sendable {
     case text(String)
     case functionCalls([String])
     case strongTypedValue(Sendable)
+    case image(Data)
+    case audio(Data)
 }
 
 extension Array where Element == GeminiOutput {

@@ -2,8 +2,12 @@ import Foundation
 import AIAgentMacros
 @testable import SwiftAIAgent
 
-struct MockModel: AIAgentModel {
-    func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type?, toolSchemas: [String]? = nil) async throws -> [AIAgentOutput] {
+struct MockModel: AIAgentModel {    
+    func run<T: AIModelOutput>(prompt: String,
+                               outputSchema: T.Type?,
+                               toolSchemas: [String]? = nil,
+                               modalities: [Modality]? = nil,
+                               inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
         return [.text(result)]
     }
@@ -14,7 +18,11 @@ struct MockModel: AIAgentModel {
         self.id = id
     }
 
-    public func run(prompt: String, outputSchema: String?, toolSchemas: [String]? = nil) async throws -> [AIAgentOutput] {
+    public func run(prompt: String,
+                    outputSchema: String?,
+                    toolSchemas: [String]? = nil,
+                    modalities: [Modality]? = nil,
+                    inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
         return [.text(result)]
     }
