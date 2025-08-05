@@ -1,26 +1,7 @@
 import Foundation
 
 public struct GeminiResponse: Decodable {
-    struct Candidate: Decodable {
-        struct Content: Decodable {
-            struct Part {
-//                struct FunctionCall: Codable {
-//                    let id: String?
-//                    let name: String?
-//                    let args: [String: String]
-//                }
-                let text: String?
-//                let inlineData: Data?
-                let functionCall: String?
-//                let functionResponse: FunctionResponse?
-//                let fileData: FileData?
-//                let executableCode: ExecutableCode?
-//                let codeExecutionResult: CodeExecutionResult?
-            }
-            let parts: [Part]
-            let role: String
-        }
-
+    public struct Candidate: Decodable {
         let content: Content?
 //        let finishReason: FinishReason?
 //        let safetyRatings: [SafetyRating]?
@@ -33,16 +14,53 @@ public struct GeminiResponse: Decodable {
 //        let urlContextMetadata: UrlContextMetadata?
         let index: Int?
     }
+    public struct PromptFeedback: Decodable {
+        public enum BlockReason: String, Decodable {
+            case unspecified = "BLOCK_REASON_UNSPECIFIED"
+            case safety = "SAFETY"
+            case other = "OTHER"
+            case blocklist = "BLOCKLIST"
+            case prohibitedContent = "PROHIBITED_CONTENT"
+            case imageSafety = "IMAGE_SAFETY"
+        }
+        public struct SafetyRating: Decodable {
+            let category: HarmCategory
+            let probability: HarmProbability
+            let blocked: Bool
+        }
+        let blockReason: BlockReason
+        let safetyRatings: SafetyRating
+    }
+    public struct UsageMetadata: Decodable {
+        public struct ModalityTokenCount: Decodable {
+            let modality: GeminiModality
+            let tokenCount: Int
+        }
+        let promptTokenCount: Int?
+        let cachedContentTokenCount: Int?
+        let candidatesTokenCount: Int?
+        let toolUsePromptTokenCount: Int?
+        let thoughtsTokenCount: Int?
+        let totalTokenCount: Int?
+        let promptTokensDetails: [ModalityTokenCount]?
+        let cacheTokensDetails: [ModalityTokenCount]?
+        let candidatesTokensDetails: [ModalityTokenCount]?
+        let toolUsePromptTokensDetails: [ModalityTokenCount]?
+    }
     let candidates: [Candidate]
-//    let promptFeedback: PromptFeedback?
-//    let usageMetadata: UsageMetadata?
+    let promptFeedback: PromptFeedback?
+    let usageMetadata: UsageMetadata?
     let modelVersion: String?
     let responseId: String?
 }
 
 extension GeminiResponse {
-    public var text: String {
-        candidates.first?.content?.parts.compactMap(\.text).joined(separator: "\n") ?? ""
+    public var text: String? {
+        candidates.first?.content?.parts.compactMap(\.text).joined(separator: "\n")
+    }
+
+    public var inlineData: Content.Part.InlineData? {
+        candidates.first?.content?.parts.compactMap(\.inlineData).first
     }
 }
 
@@ -71,13 +89,5 @@ extension Data {
         var functionCallStrings: [String] = []
         findFunctionCalls(in: jsonObject, results: &functionCallStrings)
         return functionCallStrings
-    }
-}
-
-extension GeminiResponse.Candidate.Content.Part: Codable {
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        text = try? container.decode(String.self, forKey: .text)
-        functionCall = nil
     }
 }

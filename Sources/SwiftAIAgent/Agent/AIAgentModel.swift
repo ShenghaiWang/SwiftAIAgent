@@ -1,20 +1,49 @@
 import AIAgentMacros
 
+public enum Modality: String, Codable, Sendable {
+    case unspecified = "MODALITY_UNSPECIFIED"
+    case text = "TEXT"
+    case image = "IMAGE"
+    case audio = "AUDIO"
+}
+
+public struct InlineData: Codable, Sendable {
+    let mimeType: String
+    /// The base64-encoded data.
+    let data: String
+
+    public init(mimeType: String, data: String) {
+        self.mimeType = mimeType
+        self.data = data
+    }
+}
 /// AIAgentModel which abstract away the differences of LLMs
 public protocol AIAgentModel: Sendable {
-
     /// Rum prompt with LLM with structured output schema
     /// - Parameters:
     ///  - prompt: the promppt to be sent to LLM
     ///  - toolSchemas: the tool schemas that can be used
+    ///  - outputSchema: the output schema in json string format
+    ///  - modalities: the modalities of the generated content
+    ///  - inlineData: the data uploaded to work with the prompt
     /// - Returns: A wrapper of all types of output of LLM
-    func run(prompt: String, outputSchema: String?, toolSchemas: [String]?) async throws -> [AIAgentOutput]
+    func run(prompt: String,
+             outputSchema: String?,
+             toolSchemas: [String]?,
+             modalities: [Modality]?,
+             inlineData: InlineData?) async throws -> [AIAgentOutput]
 
     /// Rum prompt with LLM with structured output schema
     /// - Parameters:
     ///  - prompt: the promppt to be sent to LLM
-    ///  - outputSchema: the json schema of the expected output using Swift Strong type
+    ///  - outputSchema: the json schema of the expected output in Swift Strong type
     ///  - toolSchemas: the tool schemas that can be used
-    /// - Returns: A wrapper of all types of output of LLM
-    func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type?, toolSchemas: [String]?) async throws -> [AIAgentOutput]
+    ///  - modalities: the modalities of the generated content
+    ///  - inlineData: the data uploaded to work with the prompt
+    /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
+    func run<T: AIModelOutput>(prompt: String,
+                               outputSchema: T.Type?,
+                               toolSchemas: [String]?,
+                               modalities: [Modality]?,
+                               inlineData: InlineData?) async throws -> [AIAgentOutput]
 }

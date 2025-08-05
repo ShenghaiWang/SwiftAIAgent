@@ -2,25 +2,54 @@ import Foundation
 import GeminiSDK
 import AIAgentMacros
 
-extension GeminiSDK: AIAgentModel {    
-    public func run<T: AIModelOutput>(prompt: String,
-                                      outputSchema: T.Type? = nil,
-                                      toolSchemas: [String]? = nil) async throws -> [AIAgentOutput] {
-        let functionDeclarations = toolSchemas?.compactMap(\.functionDeclaration) ?? []
-        let result = try await textGeneration(prompt: prompt,
-                                              responseSchema: outputSchema,
-                                              tools: [.init(functionDeclarations: functionDeclarations)])
-        return result.aiAgentOutput
-    }
-    
+extension GeminiSDK: AIAgentModel {
+    /// Rum prompt with LLM with structured output schema
+    /// - Parameters:
+    ///  - prompt: the prompt to be sent to Gemini
+    ///  - outputSchema: the output schema in json string format
+    ///  - toolSchemas: the tool schemas that can be used
+    ///  - modalities: the modalities of the generated content
+    ///  - inlineData: the data uploaded to work with the prompt
+    /// - Returns: A wrapper of all types of output of Gemini
     public func run(prompt: String,
                     outputSchema: String? = nil,
-                    toolSchemas: [String]? = nil) async throws -> [AIAgentOutput] {
+                    toolSchemas: [String]? = nil,
+                    modalities: [Modality]? = [.text],
+                    inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let functionDeclarations = toolSchemas?.compactMap(\.functionDeclaration) ?? []
-        let result = try await textGeneration(prompt: prompt,
-                                              responseJsonSchema: outputSchema,
-                                              tools: [.init(functionDeclarations: functionDeclarations)])
+        let request = GeminiRequest.request(for: prompt,
+                                            responseJsonSchema: outputSchema,
+                                            tools: [.init(functionDeclarations: functionDeclarations)],
+                                            modalities: modalities,
+                                            inlineData: inlineData)
+        let result = try await run(request: request)
         return result.aiAgentOutput
+    }
+
+    /// Rum prompt with LLM with structured output schema
+    /// - Parameters:
+    ///  - prompt: the prompt to be sent to Gemini
+    ///  - outputSchema: the json schema of the expected output in Swift Strong type
+    ///  - toolSchemas: the tool schemas that can be used
+    ///  - modalities: the modalities of the generated content
+    ///  - inlineData: the data uploaded to work with the prompt
+    /// - Returns: A wrapper of all types of output of Gemini that contains strong typed value
+    public func run<T: AIModelOutput>(prompt: String,
+                                      outputSchema: T.Type? = nil,
+                                      toolSchemas: [String]? = nil,
+                                      modalities: [Modality]? = [.text],
+                                      inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
+
+        let result = try await run(prompt: prompt,
+                                   outputSchema: outputSchema?.outputSchema,
+                                   toolSchemas: toolSchemas,
+                                   modalities: modalities,
+                                   inlineData: inlineData)
+        if case let .text(jsonString) = result.firstText {
+            let value = try JSONDecoder().decode(T.self, from: Data(jsonString.utf8))
+            return [.strongTypedValue(value)] + result.allFunctionCallOutputs
+        }
+        throw Error.wrongResponse
     }
 }
 
@@ -61,6 +90,8 @@ extension GeminiOutput {
         case let .functionCalls(calls): .functionCalls(calls)
         case let .strongTypedValue(value): .strongTypedValue(value)
         case let .text(text): .text(text)
+        case let .image(data): .image(data)
+        case let .audio(data): .audio(data)
         }
     }
 }
@@ -68,5 +99,46 @@ extension GeminiOutput {
 extension Array where Element == GeminiOutput {
     var aiAgentOutput: [AIAgentOutput] {
         compactMap(\.aiAgentOutput)
+    }
+}
+
+extension GeminiRequest {
+    static func request(for prompt: String,
+                        responseJsonSchema: String?,
+                        tools: [Tool]?,
+                        modalities: [Modality]?,
+                        inlineData: InlineData?) -> GeminiRequest {
+        let contents: [Content] =
+        if let inlineData {
+            [.init(parts: [Content.Part.init(text: prompt, inlineData: inlineData.inlineData)])]
+        } else {
+            [.init(parts: [Content.Part.init(text: prompt)])]
+        }
+        let generationConfig: GenerationConfig =
+        if let responseJsonSchema {
+            .init(responseMimeType: "application/json",
+                  responseJsonSchema: responseJsonSchema,
+                  responseModalities: modalities?.map(\.modality))
+        } else {
+            .init(responseModalities: modalities?.map(\.modality))
+        }
+        return GeminiRequest(contents: contents, generationConfig: generationConfig, tools: tools)
+    }
+}
+
+extension InlineData {
+    var inlineData: Content.Part.InlineData {
+        .init(mimeType: mimeType, data: data)
+    }
+}
+
+extension Modality {
+    var modality: GeminiModality {
+        switch self {
+        case .text: .text
+        case .image: .image
+        case .audio:  .audio
+        case .unspecified: .unspecified
+        }
     }
 }

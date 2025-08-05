@@ -1,19 +1,12 @@
 import Foundation
 
 public struct GeminiRequest: Codable {
-    public struct Content: Codable {
-        public struct Part: Codable {
-            let text: String
-        }
-        let parts: [Part]
-    }
-
     public struct GenerationConfig: Decodable {
         let stopSequences: [String]?
         let responseMimeType: String?
         let responseSchema: Schema?
         let responseJsonSchema: String?
-        let responseModalities: [Modality]?
+        let responseModalities: [GeminiModality]?
         let candidateCount: Int?
         let maxOutputTokens: Int?
         let temperature: Double?
@@ -29,24 +22,31 @@ public struct GeminiRequest: Codable {
         let thinkingConfig: ThinkingConfig?
         let mediaResolution: MediaResolution?
 
-        public enum Modality: String, Codable {
-            case unspecified = "MODALITY_UNSPECIFIED"
-            case text = "TEXT"
-            case image = "IMAGE"
-            case audio = "AUDIO"
-        }
-
         public struct SpeechConfig: Codable {
-            let voiceConfig: VoiceConfig
-            let multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig
-            let languageCode: String
+            let voiceConfig: VoiceConfig?
+            let multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig?
+            let languageCode: String?
+
+            public init(voiceConfig: VoiceConfig? = nil,
+                        multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig? = nil,
+                        languageCode: String? = nil) {
+                self.voiceConfig = voiceConfig
+                self.multiSpeakerVoiceConfig = multiSpeakerVoiceConfig
+                self.languageCode = languageCode
+            }
         }
 
         public struct VoiceConfig: Codable {
             public struct PrebuiltVoiceConfig: Codable {
-                let voiceName: String
+                let voiceName: VoiceName
+                public init(voiceName: VoiceName) {
+                    self.voiceName = voiceName
+                }
             }
             let prebuiltVoiceConfig: PrebuiltVoiceConfig?
+            public init(prebuiltVoiceConfig: PrebuiltVoiceConfig?) {
+                self.prebuiltVoiceConfig = prebuiltVoiceConfig
+            }
         }
 
         public struct MultiSpeakerVoiceConfig: Codable {
@@ -55,6 +55,9 @@ public struct GeminiRequest: Codable {
                 let voiceConfig: VoiceConfig
             }
             let speakerVoiceConfigs: [SpeakerVoiceConfig]?
+            public init(speakerVoiceConfigs: [SpeakerVoiceConfig]?) {
+                self.speakerVoiceConfigs = speakerVoiceConfigs
+            }
         }
 
         public struct ThinkingConfig: Codable {
@@ -73,7 +76,7 @@ public struct GeminiRequest: Codable {
              responseMimeType: String? = nil,
              responseSchema: Schema? = nil,
              responseJsonSchema: String? = nil,
-             responseModalities: [Modality]? = nil,
+             responseModalities: [GeminiModality]? = nil,
              candidateCount: Int? = nil,
              maxOutputTokens: Int? = nil,
              temperature: Double? = nil,
@@ -197,28 +200,6 @@ public struct GeminiRequest: Codable {
     }
 
     public struct SafetySetting: Codable {
-        public enum HarmCategory: String, Codable {
-            case unspecified = "HARM_CATEGORY_UNSPECIFIED"
-            case derogatory = "HARM_CATEGORY_DEROGATORY"
-            case toxicity = "HARM_CATEGORY_TOXICITY"
-            case violence = "HARM_CATEGORY_VIOLENCE"
-            case sexual = "HARM_CATEGORY_SEXUAL"
-            case medical = "HARM_CATEGORY_MEDICAL"
-            case dangerous = "HARM_CATEGORY_DANGEROUS"
-            case harassment = "HARM_CATEGORY_HARASSMENT"
-            case hateSpeech = "HARM_CATEGORY_HATE_SPEECH"
-            case explicit = "HARM_CATEGORY_SEXUALLY_EXPLICIT"
-            case dangerousCpntent = "HARM_CATEGORY_DANGEROUS_CONTENT"
-            case integrity = "HARM_CATEGORY_CIVIC_INTEGRITY"
-        }
-        public enum HarmBlockThreshold: String, Codable {
-            case unspecified = "HARM_BLOCK_THRESHOLD_UNSPECIFIED"
-            case low = "BLOCK_LOW_AND_ABOVE"
-            case medium = "BLOCK_MEDIUM_AND_ABOVE"
-            case high = "BLOCK_ONLY_HIGH"
-            case none = "BLOCK_NONE"
-            case off = "OFF"
-        }
         let category: HarmCategory
         let threshold: HarmBlockThreshold
     }
@@ -230,35 +211,49 @@ public struct GeminiRequest: Codable {
     let tools: [Tool]?
     let toolConfig: ToolConfig?
     let safetySettings: [SafetySetting]?
-}
 
-extension GeminiRequest {
-    init(prompt: String, responseJsonSchema: String? = nil, tools: [Tool] = []) {
-        self.contents = [.init(parts: [.init(text: prompt)])]
-        self.systemInstruction = nil
-        if let responseJsonSchema {
-            self.generationConfig = .init(responseMimeType: "application/json",
-                                          responseJsonSchema: responseJsonSchema)
-        } else {
-            self.generationConfig = nil
-        }
-        self.cachedContent = nil
+    public init(contents: [Content],
+                systemInstruction: Content? = nil,
+                generationConfig: GenerationConfig? = nil,
+                cachedContent: String? = nil,
+                tools: [Tool]? = nil,
+                toolConfig: ToolConfig? = nil,
+                safetySettings: [SafetySetting]? = nil) {
+        self.contents = contents
+        self.systemInstruction = systemInstruction
+        self.generationConfig = generationConfig
+        self.cachedContent = cachedContent
         self.tools = tools
-        self.toolConfig = nil
-        self.safetySettings = nil
+        self.toolConfig = toolConfig
+        self.safetySettings = safetySettings
     }
 }
 
 extension GeminiRequest.GenerationConfig: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(stopSequences, forKey: .stopSequences)
         try container.encodeIfPresent(responseMimeType, forKey: .responseMimeType)
-
         if let schemaString = responseJsonSchema {
             let data = Data(schemaString.utf8)
             let jsonObject = try JSONSerialization.jsonObject(with: data)
             try container.encode(JSONAny(value: jsonObject), forKey: .responseJsonSchema)
         }
+        try container.encodeIfPresent(responseModalities, forKey: .responseModalities)
+        try container.encodeIfPresent(candidateCount, forKey: .candidateCount)
+        try container.encodeIfPresent(maxOutputTokens, forKey: .maxOutputTokens)
+        try container.encodeIfPresent(temperature, forKey: .temperature)
+        try container.encodeIfPresent(topP, forKey: .topP)
+        try container.encodeIfPresent(topK, forKey: .topK)
+        try container.encodeIfPresent(seed, forKey: .seed)
+        try container.encodeIfPresent(presencePenalty, forKey: .presencePenalty)
+        try container.encodeIfPresent(frequencyPenalty, forKey: .frequencyPenalty)
+        try container.encodeIfPresent(responseLogprobs, forKey: .responseLogprobs)
+        try container.encodeIfPresent(logprobs, forKey: .logprobs)
+        try container.encodeIfPresent(enableEnhancedCivicAnswers, forKey: .enableEnhancedCivicAnswers)
+        try container.encodeIfPresent(speechConfig, forKey: .speechConfig)
+        try container.encodeIfPresent(thinkingConfig, forKey: .thinkingConfig)
+        try container.encodeIfPresent(mediaResolution, forKey: .mediaResolution)
     }
 }
 

@@ -43,13 +43,24 @@ public final actor AIAgent: Sendable {
         }
     }
 
+    /// Rum prompt with LLM with structured output schema
+    /// - Parameters:
+    ///  - prompt: the promppt to be sent to LLM
+    ///  - outputSchema: the output schema in json string format
+    ///  - modalities: the modalities of the generated content
+    ///  - inlineData: the inlineData to be working with prompt
+    /// - Returns: A wrapper of all types of output of LLM
     public func run(prompt: String,
-                    outputSchema: String? = nil) async throws -> [AIAgentOutput] {
+                    outputSchema: String? = nil,
+                    modalities: [Modality] = [.text],
+                    inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
         var result = try await model.run(prompt: combinedPrompt,
                                          outputSchema: outputSchema,
-                                         toolSchemas: toolDefinitions)
+                                         toolSchemas: toolDefinitions,
+                                         modalities: modalities,
+                                         inlineData: inlineData)
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
         if !allFunctionCalls.isEmpty {
@@ -69,12 +80,20 @@ public final actor AIAgent: Sendable {
     /// - Parameters:
     ///  - prompt: Along with context, instruction, prompmt defines the task for this agent.
     ///  - outputSchema: The output type, which is used guide LLM for structured output
-    public func run<T: AIModelOutput>(prompt: String, outputSchema: T.Type) async throws -> [AIAgentOutput] {
+    ///  - modalities: the modalities of the generated content
+    ///  - inlineData: the inlineData to be working with prompt
+    /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
+    public func run<T: AIModelOutput>(prompt: String,
+                                      outputSchema: T.Type,
+                                      modalities: [Modality] = [.text],
+                                      inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
         var result = try await model.run(prompt: combinedPrompt,
                                          outputSchema: outputSchema,
-                                         toolSchemas: toolDefinitions)
+                                         toolSchemas: toolDefinitions,
+                                         modalities: modalities,
+                                         inlineData: inlineData)
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
         if !allFunctionCalls.isEmpty {

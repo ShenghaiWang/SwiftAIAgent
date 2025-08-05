@@ -64,9 +64,12 @@ struct GeminiSDKTests {
 
     @Test("Requesting function calls")
     func requestingFunctionCalls() throws {
-        let request = GeminiRequest(prompt: "", tools: [.init(functionDeclarations: [.init(name: "getWeather",
-                                                                                           description: "Find the weather in the specified city",
-                                                                                           parametersJsonSchema: Location.outputSchema)])])
+        let request = GeminiRequest(
+            contents: [.init(parts: [.init(text: "")])],
+            tools: [.init(functionDeclarations: [.init(name: "getWeather",
+                                                       description: "Find the weather in the specified city",
+                                                       parametersJsonSchema: Location.outputSchema)])]
+        )
         #expect(request.requestingFunctionCalls)
     }
 }
