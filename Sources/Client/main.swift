@@ -12,7 +12,7 @@ LoggingSystem.bootstrap { label in
 //try await MCPConnection.mcpxcodebuild.connect()
 
 // Workflow example
-//try await AgentWorkflow.manual.run()
+try await AgentWorkflow.manual.run()
 //try await AgentWorkflow.automatic.run()
 
 // Tool calling example
@@ -22,4 +22,4 @@ LoggingSystem.bootstrap { label in
 //try await GminiImageGeneration.run()
 
 // Gemini Speech Generation
-try await GminiSpeechGeneration.run()
+//try await GminiSpeechGeneration.run()
