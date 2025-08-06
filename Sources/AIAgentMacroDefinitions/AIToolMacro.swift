@@ -37,7 +37,7 @@ public struct AIToolMacro: ExtensionMacro {
             """
             public static var toolSchemas: [String] { \(raw: toolSchemaDecl(for: functions)) }
             
-            var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
+            public var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
             
             public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? { \(raw: call(for: functions)) }
             """

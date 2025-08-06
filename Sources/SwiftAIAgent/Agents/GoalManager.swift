@@ -22,6 +22,8 @@ public actor GoalManager {
             <goal>\(goal)</goal>
             <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
             Is the above goal clear? Please ask for clarifications if needed.
+            Ignore the tools/function calls at this stage. 
+            Returns questions that need to be asked in the specified json schema.
             """
     }
 
@@ -31,6 +33,8 @@ public actor GoalManager {
             <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
             You are one excellent planner. 
             Please break this goal into tasks that suitalbe for AI Agents to execute.
+            You can also assign the following tools to tasks if needed
+            <avaialbleTools>\(tools.toolDefinitions.joined(separator: ","))</avaialbleTools>
             """
     }
 

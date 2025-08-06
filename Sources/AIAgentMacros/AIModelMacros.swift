@@ -6,6 +6,7 @@ public protocol AIModelOutput: Decodable, Sendable {
 
 public protocol AITool: Decodable, Sendable {
     static var toolSchemas: [String] { get }
+    var methodMap: [String: Any] { get }
     func call(_ methodName: String, args: [String: Data]) async throws -> Sendable?
 }
 

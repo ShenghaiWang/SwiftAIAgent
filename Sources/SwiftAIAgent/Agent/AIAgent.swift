@@ -38,9 +38,7 @@ public final actor AIAgent: Sendable {
     }
 
     var toolDefinitions: [String] {
-        tools.flatMap {
-            type(of: $0).toolSchemas
-        }
+        tools.toolDefinitions
     }
 
     /// Rum prompt with LLM with structured output schema

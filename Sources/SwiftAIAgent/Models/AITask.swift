@@ -33,6 +33,9 @@ struct AISubTask {
 
     /// Run sub tasks in parralel
     let runSubTasksInParallel: Bool?
+
+    /// The tool names that needed for this sub task. It should come from the function calls that passed into LLM
+    let tools: [String]?
 }
 
 extension AITask: CustomDebugStringConvertible {
@@ -62,7 +65,7 @@ extension AISubTask: CustomDebugStringConvertible {
 extension AITask {
     func workflow(for goal: String,
                   models: [AIAgentModel],
-                  tools: [AIAgentTool],
+                  tools: [any AIAgentTool],
                   mcpServers: [MCPServer]) throws -> Workflow {
         guard let subTasks,
                 let model = models.first else { // TODO: select model based on planning
@@ -70,10 +73,12 @@ extension AITask {
         }
         let steps = subTasks.map({ task in // TODO: Smarter workflow generation, sequence or paralletl? tools/mcpserver assignment etc.
             let context = AIAgentContext("<finalGoal>\(goal)</finalGoal>")
+            let taskTools = tools.filter { !Set($0.methodMap.keys).union(Set(task.tools ?? [])).isEmpty }
+            let taskMCPServers: [MCPServer] = [] // TODO: refine mcp servers
             let agent = AIAgent(title: task.name,
                                 model: model,
-                                tools: tools,
-                                mcpServers: mcpServers,
+                                tools: taskTools,
+                                mcpServers: taskMCPServers,
                                 context: context,
                                 instruction: task.details)
             // TODO: Adjust data flow input if needed

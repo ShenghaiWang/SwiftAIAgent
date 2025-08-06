@@ -2,7 +2,9 @@ import Foundation
 import AIAgentMacros
 @testable import SwiftAIAgent
 
-struct MockModel: AIAgentModel {    
+struct MockModel: AIAgentModel {
+    var description: String { "" }
+    
     func run<T: AIModelOutput>(prompt: String,
                                outputSchema: T.Type?,
                                toolSchemas: [String]? = nil,

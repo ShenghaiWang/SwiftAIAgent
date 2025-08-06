@@ -43,7 +43,7 @@ struct AIToolMacroTests {
                                 ]
                             }
 
-                            var methodMap: [String: Any] {
+                            public var methodMap: [String: Any] {
                                 [
                                     "getWeather": self.getWeather as (String) throws -> Weather
                                 ]

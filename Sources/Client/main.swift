@@ -12,8 +12,8 @@ LoggingSystem.bootstrap { label in
 //try await MCPConnection.mcpxcodebuild.connect()
 
 // Workflow example
-try await AgentWorkflow.manual.run()
-//try await AgentWorkflow.automatic.run()
+//try await AgentWorkflow.manual.run()
+try await AgentWorkflow.automatic.run()
 
 // Tool calling example
 //try await ToolCalling.run()
