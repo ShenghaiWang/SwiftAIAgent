@@ -60,14 +60,20 @@ extension AISubTask: CustomDebugStringConvertible {
 }
 
 extension AITask {
-    func workflow(for goal: String, with model: AIAgentModel) throws -> Workflow {
-        guard let subTasks else {
+    func workflow(for goal: String,
+                  models: [AIAgentModel],
+                  tools: [AIAgentTool],
+                  mcpServers: [MCPServer]) throws -> Workflow {
+        guard let subTasks,
+                let model = models.first else { // TODO: select model based on planning
             throw GoalManager.Error.noPlan
         }
         let steps = subTasks.map({ task in
             let context = AIAgentContext("<finalGoal>\(goal)</finalGoal>")
             let agent = AIAgent(title: task.name,
                                 model: model,
+                                tools: tools,
+                                mcpServers: mcpServers,
                                 context: context,
                                 instruction: task.details)
             return Workflow.Step.single(agent)

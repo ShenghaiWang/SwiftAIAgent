@@ -3,6 +3,12 @@ import GeminiSDK
 import AIAgentMacros
 
 extension GeminiSDK: AIAgentModel {
+    public var description: String {
+        """
+        LLM from Google that can be used fro chat, image generation and audio generation.
+        """
+    }
+    
     /// Rum prompt with LLM with structured output schema
     /// - Parameters:
     ///  - prompt: the prompt to be sent to Gemini

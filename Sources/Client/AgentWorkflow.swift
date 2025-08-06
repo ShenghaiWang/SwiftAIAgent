@@ -1,6 +1,7 @@
 import Foundation
 import GeminiSDK
 import SwiftAIAgent
+import AITools
 
 enum AgentWorkflow {
     case manual
@@ -23,9 +24,12 @@ enum AgentWorkflow {
         init(model: AIAgentModel, goal: String) {
             self.model = model
             self.managerAgent = AIAgent(title: "Manager", model: model)
-            self.goalManager = GoalManager(goal: goal, aiagent: managerAgent)
+            let fileIO = FileIO(baseFolder: ".")
+            self.goalManager = GoalManager(goal: goal,
+                                           managerAgent: managerAgent,
+                                           models: [model],
+                                           tools: [fileIO])
         }
-
 
         func run() async throws {
             do {
@@ -71,9 +75,11 @@ enum AgentWorkflow {
                                 """)
         let finaliserAgent = AIAgent(title: "Finaliser",
                                      model: gemini,
+                                     tools: [FileIO(baseFolder: ".")],
                                      context: context,
                                      instruction: """
-                                You are an expert in finialising articles. Please finalise the article based on the draft and review
+                                You are an expert in finialising articles. Please finalise the article based on the draft and review. 
+                                Save it in article.md file eventually."
                                 """)
 
         await finaliserAgent.add(input: draftAgent.id)
@@ -88,7 +94,8 @@ enum AgentWorkflow {
 
     private func ruanAutomaticFlow() async throws {
         let model = GeminiSDK(model: "gemini-2.5-flash", apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
-        let autoWorkflow = AutoWorkflow(model: model, goal: "Write an article about history of AI and output it in markdown format")
+        let autoWorkflow = AutoWorkflow(model: model,
+                                        goal: "Write an article about history of AI and output it in markdown format and save it in article.md file")
         try await autoWorkflow.run()
     }
 }

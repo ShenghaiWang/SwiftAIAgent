@@ -46,4 +46,7 @@ public protocol AIAgentModel: Sendable {
                                toolSchemas: [String]?,
                                modalities: [Modality]?,
                                inlineData: InlineData?) async throws -> [AIAgentOutput]
+
+    /// Description of the model capability and usage to be used in planning process
+    var description: String { get }
 }

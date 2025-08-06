@@ -15,7 +15,7 @@ struct AIToolMacroTests {
                             /// - Parameters:
                             ///  - city: The city
                             /// - Returns: Weather of the city
-                            func getWeather(city: String) -> Weather {
+                            func getWeather(city: String) throws -> Weather {
                             }
                         }
                         """
@@ -30,12 +30,12 @@ struct AIToolMacroTests {
                             /// - Parameters:
                             ///  - city: The city
                             /// - Returns: Weather of the city
-                            func getWeather(city: String) -> Weather {
+                            func getWeather(city: String) throws -> Weather {
                             }
                         }
 
                         extension ToolStruct: AITool {
-                            static var toolSchemas: [String] {
+                            public static var toolSchemas: [String] {
                                 [
                                     """
                                     {"name":"getWeather","description":"Get weather of the city","parametersJsonSchema":{"type":"object","required":["city"],"properties":{"city":{"type":"string","description":"The city"}}}}
@@ -45,20 +45,20 @@ struct AIToolMacroTests {
 
                             var methodMap: [String: Any] {
                                 [
-                                    "getWeather": self.getWeather as (String) -> Weather
+                                    "getWeather": self.getWeather as (String) throws -> Weather
                                 ]
                             }
 
-                            func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? {
+                            public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? {
                                 switch methodName {
                                 case "getWeather":
-                                    guard let fn = methodMap[methodName] as? (String) -> Weather else {
+                                    guard let fn = methodMap[methodName] as? (String) throws -> Weather else {
                                         return nil
                                     }
                                     guard let data = args["city"], let city = try? JSONDecoder().decode(String.self, from: data) else {
                                         return nil
                                     }
-                                    return fn(city)
+                                    return try fn(city)
                                 default:
                                     return nil
                                 }

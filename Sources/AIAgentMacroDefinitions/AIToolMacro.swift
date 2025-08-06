@@ -35,11 +35,11 @@ public struct AIToolMacro: ExtensionMacro {
 
         let extensionDecl = try ExtensionDeclSyntax("extension \(type.trimmed): AITool") {
             """
-            static var toolSchemas: [String] { \(raw: toolSchemaDecl(for: functions)) }
+            public static var toolSchemas: [String] { \(raw: toolSchemaDecl(for: functions)) }
             
             var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
             
-            func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? { \(raw: call(for: functions)) }
+            public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? { \(raw: call(for: functions)) }
             """
         }
 
@@ -83,7 +83,7 @@ public struct AIToolMacro: ExtensionMacro {
                 }
                 .joined(separator: ", ")
             let returnType = function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void"
-            let typeCast = "(\(paramTypes)) -> \(returnType)"
+            let typeCast = "(\(paramTypes)) \(function.isThrowingFunction ? "throws " : "")-> \(returnType)"
             return #""\#(name)": self.\#(name) as \#(typeCast)"#
         }
         let dictBody = entries.joined(separator: ",\n")
@@ -105,22 +105,24 @@ public struct AIToolMacro: ExtensionMacro {
                 return "let data = args[\"\(label)\"], let \(label) = try? JSONDecoder().decode(\(type).self, from: data)"
             }.joined(separator: ",\n")
             let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
-            let fnType = "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) -> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
+            let fnType = "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(function.isThrowingFunction ? "throws " : "")-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
             let guardArgs = params.isEmpty ? "" :
                 """
                 guard \(paramCasts) else { return nil }
                 """
             let callArgs = params.isEmpty ? "" : paramNames
+            let tryKeyword = function.isThrowingFunction ? "try " : ""
             return
                 """
                 case "\(name)":
-                    guard let fn = methodMap[methodName] as? \(fnType) else { return nil }
-                    \(guardArgs)
-                    return fn(\(callArgs))
+                guard let fn = methodMap[methodName] as? \(fnType) else { return nil }
+                \(guardArgs)
+                return \(tryKeyword)fn(\(callArgs))
                 """
         }.joined(separator: "\n")
 
-        return #"""
+        return
+            #"""
             switch methodName {
             \#(raw: cases)
             default:

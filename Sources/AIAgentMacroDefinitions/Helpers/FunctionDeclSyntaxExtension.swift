@@ -63,4 +63,8 @@ extension FunctionDeclSyntax {
                 """
         )
     }
+
+    var isThrowingFunction: Bool {
+        signature.effectSpecifiers?.throwsClause != nil
+    }
 }
