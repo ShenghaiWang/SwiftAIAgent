@@ -12,7 +12,7 @@ enum AgentWorkflow {
         case .manual:
             try await runManualFlow()
         case .automatic:
-            try await ruanAutomaticFlow()
+            try await runAutomaticFlow()
         }
     }
 
@@ -55,7 +55,6 @@ enum AgentWorkflow {
         let gemini = GeminiSDK(model: "gemini-2.5-flash",
                                apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
 
-
         let context = AIAgentContext("""
                                  The task is to write an essay about the history of AI.
                                  A few agents work on this task.
@@ -92,10 +91,15 @@ enum AgentWorkflow {
         print(result.allTexts)
     }
 
-    private func ruanAutomaticFlow() async throws {
+    private func runAutomaticFlow() async throws {
         let model = GeminiSDK(model: "gemini-2.5-flash", apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
         let autoWorkflow = AutoWorkflow(model: model,
-                                        goal: "Write an article about history of AI and output it in markdown format and save it in article.md file")
+                                        goal:
+            """
+            Summarise hidden gem features in Kotlin language and showcase their usage with examples.
+            save it in a markdown file.
+            """
+            )
         try await autoWorkflow.run()
     }
 }

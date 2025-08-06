@@ -40,7 +40,7 @@ extension GeminiSDK: AIAgentModel {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
     /// - Returns: A wrapper of all types of output of Gemini that contains strong typed value
-    public func run<T: AIModelOutput>(prompt: String,
+    public func run<T: AIModelSchema>(prompt: String,
                                       outputSchema: T.Type? = nil,
                                       toolSchemas: [String]? = nil,
                                       modalities: [Modality]? = [.text],

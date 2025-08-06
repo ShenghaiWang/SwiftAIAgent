@@ -65,13 +65,13 @@ Orchestrate workflow manually. Support sequence, parrallel, condintinal flow typ
 
 ## Structured output
 
-Use `@AIModelOutput` macro to generate json schema and feed to LLM model to get structured data.
+Use `@AIModelSchema` macro to generate json schema and feed to LLM model to get structured data.
 
 For example,
 
 ```swift
 /// Task that is broken down from a goal
-@AIModelOutput
+@AIModelSchema
 struct AITask {
     /// A descriptive name of the task
     let name: String
@@ -91,7 +91,7 @@ struct AITask {
 will generate schema below:
 
 ```swift
-extension AITask: AIModelOutput {
+extension AITask: AIModelSchema {
     static var outputSchema: String {
         """
         {"type":"object","description":"Task that is broken down from a goal","properties":{"name":{"type":"string","description":"A descriptive name of the task"},"details":{"type":"string","description":"The details a task needs to do"},"condition":{"type":"string","description":"The condition to run this step"},"runSubTasksInParallel":{"type":"boolean","description":"Run sub tasks in parralel"},"subTasks":{"type":"array","description":"Sub tasks, an recursive structure to indicate the excute orders of the tasks","items":\(AISubTask.outputSchema)}},"required":["name","details"]}

@@ -22,6 +22,8 @@ public actor GoalManager {
             <goal>\(goal)</goal>
             <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
             Is the above goal clear? Please ask for clarifications if needed.
+            Ignore the tools/function calls at this stage. 
+            Returns questions that need to be asked in the specified json schema.
             """
     }
 
@@ -31,6 +33,8 @@ public actor GoalManager {
             <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
             You are one excellent planner. 
             Please break this goal into tasks that suitalbe for AI Agents to execute.
+            You can also assign the following tools to tasks if needed
+            <avaialbleTools>\(tools.toolDefinitions.joined(separator: ","))</avaialbleTools>
             """
     }
 
@@ -59,18 +63,18 @@ public actor GoalManager {
     /// - Throws: `Swift.Error` in case of any network error or LLM error.
     public func run() async throws -> [AIAgentOutput] {
         let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
+        logger.debug("\n===Clarification Questions===\n\(clarification)\n")
         if !clarification.questions.isEmpty {
             throw Error.needClarification(questions: clarification.questions)
         }
         let task: AITask = try await runAICommand(planInstructions)
-        let workflow = try task.workflow(for: goal,
-                                         models: models,
-                                         tools: tools,
-                                         mcpServers: mcpServers)
+        logger.debug("\n===Tasks planned===\n\(task)\n")
+        let workflow = try await workflow(for: task)
+        logger.debug("\n===Workflow Planned===\n\(workflow)\n")
         return try await workflow.run(prompt: "kick off the task")
     }
 
-    private func runAICommand<T: AIModelOutput>(_ command: String) async throws -> T {
+    private func runAICommand<T: AIModelSchema>(_ command: String) async throws -> T {
         let result = try await managerAgent.run(prompt: command, outputSchema: T.self)
         if case let .strongTypedValue(result) = result.allStrongTypedValues.first,
            let task = result as? T {
@@ -85,5 +89,38 @@ public actor GoalManager {
     ///  - clarifications: Clarifications
     public func set(clarifications: [String]) {
         self.clarifications.append(contentsOf: clarifications)
+    }
+
+    private func workflow(for task: AITask) async throws -> Workflow {
+        guard let subTasks = task.subTasks,
+                let model = models.first else { // TODO: select model based on planning
+            throw GoalManager.Error.noPlan
+        }
+
+        var agentIds: [UUID] = []
+        var steps: [Workflow.Step] = []
+        for task in subTasks { // TODO: Smarter workflow generation, sequence or paralletl? tools/mcpserver assignment etc.
+            let context = AIAgentContext("<finalGoal>\(self.goal)</finalGoal>")
+            let taskTools: [AIAgentTool] =
+            if let subTaskTool = task.tools {
+                tools.filter { !Set($0.methodMap.keys).union(Set(subTaskTool)).isEmpty }
+            } else {
+                []
+            }
+            let taskMCPServers: [MCPServer] = [] // TODO: refine mcp servers
+            let agent = AIAgent(title: task.name,
+                                model: model,
+                                tools: taskTools,
+                                mcpServers: taskMCPServers,
+                                context: context,
+                                instruction: task.details)
+            for id in agentIds.dropLast() { // TODO: refine input flow
+                await agent.add(input: id)
+            }
+            agentIds.append(agent.id)
+            // TODO: Adjust data flow input if needed
+            steps.append(Workflow.Step.single(agent))
+        }
+        return Workflow(step: .sequence(steps))
     }
 }

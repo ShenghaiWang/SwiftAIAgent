@@ -3,13 +3,13 @@ import SwiftSyntaxMacroExpansion
 import Testing
 import AIAgentMacroDefinitions
 
-struct AIModelOutputTests {
+struct AIModelSchemaTests {
     @Test
     func testEnumSchema() {
         let source: SourceFileSyntax =
                         """
                         /// Gender
-                        @AIModelOutput
+                        @AIModelSchema
                         enum Gender: String, Codable {
                             /// Gender - male
                             case male
@@ -17,7 +17,7 @@ struct AIModelOutputTests {
                             case female
                         }
                         """
-        let transformedSF = source.expand(macros: ["AIModelOutput": AIModelOutputMacro.self]) { _ in
+        let transformedSF = source.expand(macros: ["AIModelSchema": AIModelSchemaMacro.self]) { _ in
             BasicMacroExpansionContext(sourceFiles: [source: file])
         }
         let expectedDescription =
@@ -30,7 +30,7 @@ struct AIModelOutputTests {
                             case female
                         }
                         
-                        extension Gender: AIModelOutput {
+                        extension Gender: AIModelSchema {
                             static var outputSchema: String {
                                 """
                                 {"Gender":{"description":"Gender: Gender - male, Gender - female","enum":["male","female"]}}
@@ -46,7 +46,7 @@ struct AIModelOutputTests {
         let source: SourceFileSyntax =
                         """
                         /// Person
-                        @AIModelOutput
+                        @AIModelSchema
                         struct Person: Codable {
                             /// Name: first name + last name
                             let name: String
@@ -57,7 +57,7 @@ struct AIModelOutputTests {
                             }
                         }
                         """
-        let transformedSF = source.expand(macros: ["AIModelOutput": AIModelOutputMacro.self]) { _ in
+        let transformedSF = source.expand(macros: ["AIModelSchema": AIModelSchemaMacro.self]) { _ in
             BasicMacroExpansionContext(sourceFiles: [source: file])
         }
         let expectedDescription =
@@ -73,7 +73,7 @@ struct AIModelOutputTests {
                             }
                         }
                         
-                        extension Person: AIModelOutput {
+                        extension Person: AIModelSchema {
                             static var outputSchema: String {
                                 """
                                 {"type":"object","description":"Person","properties":{"name":{"type":"string","description":"Name: first name + last name"},"age":{"type":"number","description":"Age"}},"required":["name"]}
@@ -89,13 +89,13 @@ struct AIModelOutputTests {
         let source: SourceFileSyntax =
                         """
                         /// Tasks
-                        @AIModelOutput
+                        @AIModelSchema
                         struct AITasks {
                             /// Task items
                             let tasks: [AITask]
                         }
                         """
-        let transformedSF = source.expand(macros: ["AIModelOutput": AIModelOutputMacro.self]) { _ in
+        let transformedSF = source.expand(macros: ["AIModelSchema": AIModelSchemaMacro.self]) { _ in
             BasicMacroExpansionContext(sourceFiles: [source: file])
         }
         let expectedDescription =
@@ -106,7 +106,7 @@ struct AIModelOutputTests {
                             let tasks: [AITask]
                         }
                         
-                        extension AITasks: AIModelOutput {
+                        extension AITasks: AIModelSchema {
                             static var outputSchema: String {
                                 """
                                 {"type":"object","description":"Tasks","properties":{"tasks":{"type":"array","description":"Task items","items":\(AITask.outputSchema)}},"required":["tasks"]}
@@ -122,12 +122,12 @@ struct AIModelOutputTests {
         let source: SourceFileSyntax =
                         """
                         /// Clarification questions to a task
-                        @AIModelOutput
+                        @AIModelSchema
                         struct AIGoalClarification {
                             let questions: [String]?
                         }
                         """
-        let transformedSF = source.expand(macros: ["AIModelOutput": AIModelOutputMacro.self]) { _ in
+        let transformedSF = source.expand(macros: ["AIModelSchema": AIModelSchemaMacro.self]) { _ in
             BasicMacroExpansionContext(sourceFiles: [source: file])
         }
         let expectedDescription =
@@ -137,7 +137,7 @@ struct AIModelOutputTests {
                             let questions: [String]?
                         }
 
-                        extension AIGoalClarification: AIModelOutput {
+                        extension AIGoalClarification: AIModelSchema {
                             static var outputSchema: String {
                                 """
                                 {"type":"object","description":"Clarification questions to a task","properties":{"questions":{"type":"array","description":"","items":{"type":"string"}}},"required":[]}
@@ -152,25 +152,25 @@ struct AIModelOutputTests {
     func testObjectSchema() {
         let source: SourceFileSyntax =
                         """
-                        @AIModelOutput
-                        struct TestStruct: Codable {
+                        @AIModelSchema
+                        public struct TestStruct: Codable {
                             let value: Int
                             let innerStruct: InnerStruct
                         }
                         """
-        let transformedSF = source.expand(macros: ["AIModelOutput": AIModelOutputMacro.self]) { _ in
+        let transformedSF = source.expand(macros: ["AIModelSchema": AIModelSchemaMacro.self]) { _ in
             BasicMacroExpansionContext(sourceFiles: [source: file])
         }
         let expectedDescription =
                         #"""
 
-                        struct TestStruct: Codable {
+                        public struct TestStruct: Codable {
                             let value: Int
                             let innerStruct: InnerStruct
                         }
 
-                        extension TestStruct: AIModelOutput {
-                            static var outputSchema: String {
+                        extension TestStruct: AIModelSchema {
+                            public static var outputSchema: String {
                                 """
                                 {"type":"object","description":"","properties":{"value":{"type":"number","description":""},"innerStruct":\(InnerStruct.outputSchema)},"required":["value","innerStruct"]}
                                 """

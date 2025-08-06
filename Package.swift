@@ -23,6 +23,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/ShenghaiWang/swift-mcp-sdk.git", branch: "BearerAuthorization"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0-latest"),
+        .package(url: "https://github.com/apple/swift-system", from: "1.6.1"),
     ],
     targets: [.target(name: "SwiftAIAgent",
                       dependencies: [
@@ -50,6 +51,7 @@ let package = Package(
               .testTarget(name: "AIAgentMacrosTests",
                           dependencies: [
                             "AIAgentMacros",
+                            "AIAgentMacroDefinitions",
                             .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
                             .product(name: "SwiftParser", package: "swift-syntax"),
                           ]),
@@ -65,6 +67,7 @@ let package = Package(
               .testTarget(name: "AIToolsTests",
                           dependencies: [
                             "AIAgentMacros",
+                            "AITools",
                           ]),
               .executableTarget(name: "Client",
                                 dependencies: [
@@ -72,6 +75,7 @@ let package = Package(
                                     "GeminiSDK",
                                     "SwiftAIAgent",
                                     "AITools",
+                                    .product(name: "SystemPackage", package: "swift-system"),
                                     .product(name: "MCP", package: "swift-mcp-sdk"),
                                 ]),
     ]

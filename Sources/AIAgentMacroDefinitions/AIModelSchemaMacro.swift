@@ -3,15 +3,15 @@ import SwiftSyntax
 import SwiftSyntaxMacros
 import SwiftDiagnostics
 
-enum AIModelOutputMacroDiagnostic: String, DiagnosticMessage {
-    case requiresStructOrEnum = "@AIModelOutput can only be applied to a struct or an enum"
+enum AIModelSchemaMacroDiagnostic: String, DiagnosticMessage {
+    case requiresStructOrEnum = "@AIModelSchema can only be applied to a struct or an enum"
 
     var message: String { rawValue }
-    var diagnosticID: MessageID { MessageID(domain: "SwiftAIAgentMacros", id: "AIModelOutputMacro.\(self)") }
+    var diagnosticID: MessageID { MessageID(domain: "SwiftAIAgentMacros", id: "AIModelSchemaMacro.\(self)") }
     var severity: DiagnosticSeverity { .error }
 }
 
-public struct AIModelOutputMacro: ExtensionMacro {
+public struct AIModelSchemaMacro: ExtensionMacro {
     public static func expansion(
       of node: AttributeSyntax,
       attachedTo declaration: some DeclGroupSyntax,
@@ -20,7 +20,7 @@ public struct AIModelOutputMacro: ExtensionMacro {
       in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
         guard declaration.is(StructDeclSyntax.self) || declaration.is(EnumDeclSyntax.self) else {
-            context.diagnose(Diagnostic(node: node, message: AIModelOutputMacroDiagnostic.requiresStructOrEnum))
+            context.diagnose(Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum))
             return []
         }
 
@@ -32,10 +32,9 @@ public struct AIModelOutputMacro: ExtensionMacro {
             \#(raw: jsonSchema.compactJson)
             """
             """#
-
-        let extensionDecl = try ExtensionDeclSyntax("extension \(type.trimmed): AIModelOutput") {
+        let extensionDecl = try ExtensionDeclSyntax("extension \(type.trimmed): AIModelSchema") {
             """
-            static var outputSchema: String { \(raw: result) }
+            \(declaration.modifiers)static var outputSchema: String { \(raw: result) }
             """
         }
 

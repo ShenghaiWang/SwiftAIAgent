@@ -1,6 +1,6 @@
 import Foundation
 
-extension Array: AIModelOutput where Element: AIModelOutput {
+extension Array: AIModelSchema where Element: AIModelSchema {
     public static var outputSchema: String {
         """
         {

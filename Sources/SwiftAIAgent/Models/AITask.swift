@@ -2,7 +2,7 @@ import Foundation
 import AIAgentMacros
 
 /// Task that is broken down from a goal
-@AIModelOutput
+@AIModelSchema
 struct AITask {
     /// A descriptive name of the task
     let name: String
@@ -19,12 +19,13 @@ struct AITask {
     let subTasks: [AISubTask]?
 }
 
-// Have to have this as AIModelOutput cannot generate outputSchema recursively
+// Have to have this as AIModelSchema cannot generate outputSchema recursively
 /// Task that is broken down from a goal
-@AIModelOutput
+@AIModelSchema
 struct AISubTask {
     /// A descriptive name of the task
     let name: String
+
     /// The details a task needs to do
     let details: String
 
@@ -33,51 +34,30 @@ struct AISubTask {
 
     /// Run sub tasks in parralel
     let runSubTasksInParallel: Bool?
+
+    /// The tool names that needed for this sub task. It should come from the function calls that passed into LLM
+    let tools: [String]?
 }
 
-extension AITask: CustomDebugStringConvertible {
-    public var debugDescription: String {
+extension AITask: CustomStringConvertible {
+    public var description: String {
         """
-        
         ===Task name: \(name)===
         Details: \(details)
-        Sub Tasks: \(subTasks?.compactMap(\.debugDescription).joined() ?? "")
+        Sub Tasks: \(subTasks?.compactMap(\.description).joined() ?? "\n")
         
         """
     }
 }
 
 
-extension AISubTask: CustomDebugStringConvertible {
-    public var debugDescription: String {
+extension AISubTask: CustomStringConvertible {
+    public var description: String {
         """
-        
         ===Task name: \(name)===
         Details: \(details)
+        Tools: \(tools?.joined(separator: ",") ?? "")
         
         """
-    }
-}
-
-extension AITask {
-    func workflow(for goal: String,
-                  models: [AIAgentModel],
-                  tools: [AIAgentTool],
-                  mcpServers: [MCPServer]) throws -> Workflow {
-        guard let subTasks,
-                let model = models.first else { // TODO: select model based on planning
-            throw GoalManager.Error.noPlan
-        }
-        let steps = subTasks.map({ task in
-            let context = AIAgentContext("<finalGoal>\(goal)</finalGoal>")
-            let agent = AIAgent(title: task.name,
-                                model: model,
-                                tools: tools,
-                                mcpServers: mcpServers,
-                                context: context,
-                                instruction: task.details)
-            return Workflow.Step.single(agent)
-        })
-        return Workflow(step: .sequence(steps))
     }
 }

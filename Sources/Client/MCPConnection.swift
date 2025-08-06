@@ -1,7 +1,12 @@
 import Foundation
 import MCP
-import System
 import SwiftAIAgent
+
+#if canImport(System)
+    import System
+#else
+    import SystemPackage
+#endif
 
 enum MCPConnection {
     case mcpxcodebuild

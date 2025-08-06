@@ -67,4 +67,8 @@ extension FunctionDeclSyntax {
     var isThrowingFunction: Bool {
         signature.effectSpecifiers?.throwsClause != nil
     }
+
+    var isAsyncFunction: Bool {
+        signature.effectSpecifiers?.asyncSpecifier != nil
+    }
 }

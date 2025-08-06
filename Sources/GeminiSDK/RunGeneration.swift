@@ -1,5 +1,8 @@
 import Foundation
 import AIAgentMacros
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 extension GeminiSDK {
     /// Rum prompt with Gmini

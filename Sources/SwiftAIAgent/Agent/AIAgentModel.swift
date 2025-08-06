@@ -18,7 +18,7 @@ public struct InlineData: Codable, Sendable {
     }
 }
 /// AIAgentModel which abstract away the differences of LLMs
-public protocol AIAgentModel: Sendable {
+public protocol AIAgentModel: Sendable, CustomStringConvertible {
     /// Rum prompt with LLM with structured output schema
     /// - Parameters:
     ///  - prompt: the promppt to be sent to LLM
@@ -41,12 +41,12 @@ public protocol AIAgentModel: Sendable {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
     /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
-    func run<T: AIModelOutput>(prompt: String,
+    func run<T: AIModelSchema>(prompt: String,
                                outputSchema: T.Type?,
                                toolSchemas: [String]?,
                                modalities: [Modality]?,
                                inlineData: InlineData?) async throws -> [AIAgentOutput]
 
     /// Description of the model capability and usage to be used in planning process
-    var description: String { get }
+    nonisolated var description: String { get }
 }

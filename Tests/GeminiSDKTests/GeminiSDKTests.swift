@@ -4,7 +4,7 @@ import Foundation
 import AIAgentMacros
 
 /// The location parameter for getWeather function
-@AIModelOutput
+@AIModelSchema
 struct Location {
     /// the name of the city
     let city: String

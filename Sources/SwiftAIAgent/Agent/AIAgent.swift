@@ -3,15 +3,19 @@ import AIAgentMacros
 
 /// AIAgent type that wrap llm, context, instruction, tools, mcp servers that can work independently for a single task.
 public final actor AIAgent: Sendable {
-    private let resultTag = "lastest result of agent run of "
-    private let stopTooCallInstruction = "If you can find the answer from the previous agent run, DO NOT RETURN FUNCTIONS TO ALL"
-    public let id = UUID()
-    let title: String
-    let context: AIAgentContext?
-    let model: AIAgentModel
-    let tools: [any AIAgentTool]
-    let mcpServers: [any MCPServer]
-    let instruction: String?
+    private let resultTag = "latest result of agent run of "
+    private let stopTooCallInstruction =
+        """
+        Please check the result of the function tool calls. 
+        If we don't need to call these function tools anymore, DO NOT RETURN FUNCTIONS TO CALL.
+        """
+    public nonisolated let id = UUID()
+    nonisolated let title: String
+    nonisolated let context: AIAgentContext?
+    nonisolated let model: AIAgentModel
+    nonisolated let tools: [any AIAgentTool]
+    nonisolated let mcpServers: [any MCPServer]
+    nonisolated let instruction: String?
     private(set) var inputs: [UUID] = []
 
     /// Initialise an AI Agent
@@ -38,9 +42,7 @@ public final actor AIAgent: Sendable {
     }
 
     var toolDefinitions: [String] {
-        tools.flatMap {
-            type(of: $0).toolSchemas
-        }
+        tools.toolDefinitions
     }
 
     /// Rum prompt with LLM with structured output schema
@@ -55,7 +57,7 @@ public final actor AIAgent: Sendable {
                     modalities: [Modality] = [.text],
                     inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
-        logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
+        logger.debug("\n\(description)\n===Input===\n\(combinedPrompt)\n")
         var result = try await model.run(prompt: combinedPrompt,
                                          outputSchema: outputSchema,
                                          toolSchemas: toolDefinitions,
@@ -64,15 +66,15 @@ public final actor AIAgent: Sendable {
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
         if !allFunctionCalls.isEmpty {
-            result = result.filter { if case .functionCalls = $0 { false } else { true } }
-            logger.debug("\n===Agent ID\(id)===\n===Calling Tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
+            logger.debug("\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n")
+            logger.debug("\n\(description)\n===Calling tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
             result += try await callTools(with: allFunctionCalls)
             await Runtime.shared.set(output: result, for: id, title: title)
-            logger.debug("\n===Agent ID\(id)===\n===Rerun agent with result from tools===\n")
+            logger.debug("\n\(description)\n===Rerun agent with result from tools===\n")
             let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
-            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema)
+            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema, modalities: modalities, inlineData: inlineData)
         }
-        logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.allTexts)\n")
+        logger.debug("\n\(description)\n===Output===\n\(result.allTexts)\n")
         return result
     }
 
@@ -83,12 +85,12 @@ public final actor AIAgent: Sendable {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the inlineData to be working with prompt
     /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
-    public func run<T: AIModelOutput>(prompt: String,
+    public func run<T: AIModelSchema>(prompt: String,
                                       outputSchema: T.Type,
                                       modalities: [Modality] = [.text],
                                       inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
-        logger.debug("\n===Agent ID\(id)===\n===Input===\n\(combinedPrompt)\n")
+        logger.debug("\n\(description)\n===Input===\n\(combinedPrompt)\n")
         var result = try await model.run(prompt: combinedPrompt,
                                          outputSchema: outputSchema,
                                          toolSchemas: toolDefinitions,
@@ -97,15 +99,15 @@ public final actor AIAgent: Sendable {
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
         if !allFunctionCalls.isEmpty {
-            result = result.filter { if case .functionCalls = $0 { false } else { true } }
-            logger.debug("\n===Agent ID\(id)===\n===Calling Tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
+            logger.debug("\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n")
+            logger.debug("\n\(description)\n===Calling tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
             result += try await callTools(with: allFunctionCalls)
             await Runtime.shared.set(output: result, for: id, title: title)
-            logger.debug("\n===Agent ID\(id)===\n===Rerun agent with result from tools===\n")
+            logger.debug("\n\(description)\n===Rerun agent with result from tools===\n")
             let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
-            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema)
+            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema, modalities: modalities, inlineData: inlineData)
         }
-        logger.debug("\n===Agent ID\(id)===\n===Output===\n\(result.allTexts)\n")
+        logger.debug("\n\(description)\n===Output===\n\(result.allTexts)\n")
         return result
     }
 
@@ -142,12 +144,27 @@ public final actor AIAgent: Sendable {
                 results.append(
                     .text(
                         """
-                        Result of calling function \(valueForToolCalling.name):
+                        <Result_of_calling_function_\(valueForToolCalling.name)>
                         \(callResult ?? "")
+                        </Result_of_calling_function_\(valueForToolCalling.name)>
                         """
                     ))
             }
         }
         return results
+    }
+}
+
+extension AIAgent: CustomStringConvertible {
+    public nonisolated var description: String {
+        """
+        ===AIAgent===
+        ID: \(id) Title: \(title)
+        Model: \(model)
+        Context: \(context?.contenxt ?? "")
+        Instruction: \(instruction ?? "")
+        Tools: \(tools)
+        MCP Servers: \(mcpServers)
+        """
     }
 }

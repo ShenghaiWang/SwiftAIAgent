@@ -23,7 +23,7 @@ public struct AIToolMacro: ExtensionMacro {
                 || declaration.is(EnumDeclSyntax.self)
                 || declaration.is(ActorDeclSyntax.self)
                 || declaration.is(ClassDeclSyntax.self) else {
-            context.diagnose(Diagnostic(node: node, message: AIModelOutputMacroDiagnostic.requiresStructOrEnum))
+            context.diagnose(Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum))
             return []
         }
 
@@ -37,7 +37,7 @@ public struct AIToolMacro: ExtensionMacro {
             """
             public static var toolSchemas: [String] { \(raw: toolSchemaDecl(for: functions)) }
             
-            var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
+            public var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
             
             public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? { \(raw: call(for: functions)) }
             """
@@ -83,7 +83,7 @@ public struct AIToolMacro: ExtensionMacro {
                 }
                 .joined(separator: ", ")
             let returnType = function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void"
-            let typeCast = "(\(paramTypes)) \(function.isThrowingFunction ? "throws " : "")-> \(returnType)"
+            let typeCast = "(\(paramTypes)) \(function.isAsyncFunction ? "async " : "")\(function.isThrowingFunction ? "throws " : "")-> \(returnType)"
             return #""\#(name)": self.\#(name) as \#(typeCast)"#
         }
         let dictBody = entries.joined(separator: ",\n")
@@ -105,19 +105,22 @@ public struct AIToolMacro: ExtensionMacro {
                 return "let data = args[\"\(label)\"], let \(label) = try? JSONDecoder().decode(\(type).self, from: data)"
             }.joined(separator: ",\n")
             let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
-            let fnType = "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(function.isThrowingFunction ? "throws " : "")-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
+            let tryKeyword = function.isThrowingFunction ? "try " : ""
+            let throwsKeyword = function.isThrowingFunction ? "throws " : ""
+            let awaitKeyword = function.isAsyncFunction ? "await " : ""
+            let asyncKeyword = function.isAsyncFunction ? "async " : ""
+            let fnType = "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(asyncKeyword)\(throwsKeyword)-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
             let guardArgs = params.isEmpty ? "" :
                 """
                 guard \(paramCasts) else { return nil }
                 """
             let callArgs = params.isEmpty ? "" : paramNames
-            let tryKeyword = function.isThrowingFunction ? "try " : ""
             return
                 """
                 case "\(name)":
                 guard let fn = methodMap[methodName] as? \(fnType) else { return nil }
                 \(guardArgs)
-                return \(tryKeyword)fn(\(callArgs))
+                return \(tryKeyword)\(awaitKeyword)fn(\(callArgs))
                 """
         }.joined(separator: "\n")
 

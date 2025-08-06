@@ -2,13 +2,13 @@ import Foundation
 import AIAgentMacros
 
 /// Clarification questions to a task
-@AIModelOutput
+@AIModelSchema
 struct AIGoalClarification {
     let questions: [String]
 }
 
-extension AIGoalClarification: CustomDebugStringConvertible {
-    public var debugDescription: String {
+extension AIGoalClarification: CustomStringConvertible {
+    public var description: String {
         """
         Clarification questions:\n\(questions.joined(separator: "\n"))
         """

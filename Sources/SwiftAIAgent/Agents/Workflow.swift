@@ -1,7 +1,7 @@
 import Foundation
 
 /// Workflow of the agent system
-public struct Workflow {
+public struct Workflow: Sendable {
     /// Step of a workflow
     public indirect enum Step: Sendable {
         /// Sigle step
@@ -66,5 +66,51 @@ extension Workflow.Step {
         condition(.text(prompt))
             ? try await step.run(prompt: prompt)
             : []
+    }
+}
+
+extension Workflow: CustomStringConvertible {
+    public var description: String {
+        """
+        ===Workflow===
+        Step: \(step)
+        """
+    }
+}
+
+extension Workflow.Step: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case let .single(agent):
+            """
+            ===Workflow===
+            Step Agent: 
+            \(agent)
+            --------------------\n
+            """
+        case let .sequence(steps):
+            """
+            ===Workflow sequence steps===
+            Steps: 
+            \(steps)
+            --------------------\n
+            """
+        case let .parrallel(steps):
+            """
+            ===Workflow parrallel steps===
+            Steps: 
+            \(steps)
+            --------------------\n
+            """
+        case let .conditional(condition, step):
+            """
+            ===Workflow conditional step===
+            Condition: 
+            \(String(describing: condition))
+            Step: 
+            \(step)
+            --------------------\n
+            """
+        }
     }
 }

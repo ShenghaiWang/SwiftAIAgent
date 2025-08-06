@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public final class GeminiSDK: Sendable {
     let baseURL = URL(string: "https://generativelanguage.googleapis.com/v1beta/models")!
