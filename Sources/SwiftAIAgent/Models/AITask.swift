@@ -44,7 +44,7 @@ extension AITask: CustomStringConvertible {
         """
         ===Task name: \(name)===
         Details: \(details)
-        Sub Tasks: \(subTasks?.compactMap(\.description).joined() ?? "\n")
+        Sub Tasks:\n\(subTasks?.compactMap(\.description).joined() ?? "\n")
         
         """
     }

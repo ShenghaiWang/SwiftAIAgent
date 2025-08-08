@@ -14,8 +14,11 @@ extension GeminiSDK {
         var urlRequest = URLRequest(url: URL(string: "\(baseURL)/\(model):generateContent")!)
         urlRequest.setupGeminiAPI(for: self)
         urlRequest.httpBody = try JSONEncoder().encode(request)
-        let (data, _) = try await URLSession.shared.data(for: urlRequest)
-
+        let (data, httpURLResponse) = try await urlSession.data(for: urlRequest)
+        guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode,
+                200..<300 ~= statusCode else {
+            throw Error.invalidResponse(responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
+        }
         let functioncalls = try data.functionCalls()
         output.append(.functionCalls(functioncalls))
 

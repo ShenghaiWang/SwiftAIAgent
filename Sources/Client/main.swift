@@ -7,8 +7,14 @@ LoggingSystem.bootstrap { label in
     return handler
 }
 
+let geminiAPIKey = ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? ""
+let geminiModel = "gemini-2.5-flash"
+let geminiImageModel = "gemini-2.0-flash-preview-image-generation"
+let geminiTTSModel = "gemini-2.5-flash-preview-tts"
+
+
 // MCP connection example
-//try await MCPConnection.github.connect()
+try await MCPConnection.github.connect()
 //try await MCPConnection.mcpxcodebuild.connect()
 
 // Workflow example
@@ -25,4 +31,4 @@ LoggingSystem.bootstrap { label in
 //try await GminiSpeechGeneration.run()
 
 // Google search tool
-try await GoogleSearchTool.run()
+//try await GoogleSearchTool.run()

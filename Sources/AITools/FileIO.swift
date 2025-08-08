@@ -18,13 +18,14 @@ public struct FileIO {
         return try String(contentsOf: fileURL, encoding: .utf8)
     }
 
-    /// Write content to the file
+    /// Write content to the file of the specified fileName
+    /// This tool knows the folder to save the file
     /// - Parameters:
     ///  - file: the file name, relative to base folder
     ///  - content: the content to be written to the file
-    public func write(to file: String, content: String) throws -> String {
-        let fileURL = URL(fileURLWithPath: baseFolder).appendingPathComponent(file)
+    public func write(to fileName: String, content: String) throws -> String {
+        let fileURL = URL(fileURLWithPath: baseFolder).appendingPathComponent(fileName)
         try Data(content.utf8).write(to: fileURL)
-        return "Successfully written to \(file)"
+        return "Successfully written to \(fileName)"
     }
 }

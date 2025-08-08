@@ -10,6 +10,7 @@ import FoundationNetworking
 public struct GoogleSearch {
     public enum Error: Swift.Error {
         case invalidRequest
+        case invalidResponse(responseStatusCode: Int?)
     }
     @AIModelSchema
     public struct Request: Encodable {
@@ -190,7 +191,11 @@ public struct GoogleSearch {
         guard let url = URL(string: "\(baseUrl)&\(request.parameters)") else {
             throw Error.invalidRequest
         }
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, httpURLResponse) = try await URLSession.shared.data(from: url)
+        guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode,
+                200..<300 ~= statusCode else {
+            throw Error.invalidResponse(responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
+        }
         return try JSONDecoder().decode(Response.self, from: data)
     }
 }

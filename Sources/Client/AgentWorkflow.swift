@@ -25,10 +25,14 @@ enum AgentWorkflow {
             self.model = model
             self.managerAgent = AIAgent(title: "Manager", model: model)
             let fileIO = FileIO(baseFolder: ".")
+            let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
+            let key = ProcessInfo.processInfo.environment["key"] ?? ""
             self.goalManager = GoalManager(goal: goal,
                                            managerAgent: managerAgent,
                                            models: [model],
-                                           tools: [fileIO])
+                                           tools: [fileIO,
+                                                   GoogleSearch(cx: cx, key: key),
+                                                  ])
         }
 
         func run() async throws {
@@ -39,7 +43,7 @@ enum AgentWorkflow {
                 if case let GoalManager.Error.needClarification(questions) = error {
                     print(questions
                         .enumerated()
-                        .map { "\($0 + 1): \($1))" }
+                        .map { "\($0 + 1): \($1)" }
                         .joined(separator: "\n"))
                     let clarifications = readLine()
                     await goalManager.set(clarifications: [clarifications ?? ""])
@@ -52,8 +56,8 @@ enum AgentWorkflow {
     }
 
     private func runManualFlow() async throws {
-        let gemini = GeminiSDK(model: "gemini-2.5-flash",
-                               apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+        let gemini = GeminiSDK(model: geminiModel,
+                               apiKey: geminiAPIKey)
 
         let context = AIAgentContext("""
                                  The task is to write an essay about the history of AI.
@@ -92,12 +96,12 @@ enum AgentWorkflow {
     }
 
     private func runAutomaticFlow() async throws {
-        let model = GeminiSDK(model: "gemini-2.5-flash", apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+        let model = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
         let autoWorkflow = AutoWorkflow(model: model,
                                         goal:
             """
-            Summarise hidden gem features in Kotlin language and showcase their usage with examples.
-            save it in a markdown file.
+            * Search "Computer science"
+            * Save the top 10 url of search result in 1.txt file
             """
             )
         try await autoWorkflow.run()

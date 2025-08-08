@@ -3,9 +3,7 @@ import GeminiSDK
 
 enum GminiImageGeneration {
     static func run() async throws {
-        let gemini = GeminiSDK(model: "gemini-2.0-flash-preview-image-generation",
-                               apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
-
+        let gemini = GeminiSDK(model: geminiImageModel, apiKey: geminiAPIKey)
         let result = try await gemini.run(
             prompt: "Hi, can you create a 3d rendered image of a pig with wings and a top hat flying over a happy futuristic scifi city with lots of greenery?",
             modalities: [.image, .text])

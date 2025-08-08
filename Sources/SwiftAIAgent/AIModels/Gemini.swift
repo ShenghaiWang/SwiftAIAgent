@@ -5,7 +5,7 @@ import AIAgentMacros
 extension GeminiSDK: AIAgentModel {
     public var description: String {
         """
-        LLM from Google that can be used fro chat, image generation and audio generation.
+        LLM from Google that can be used for chat, image generation and audio generation.
         """
     }
     
@@ -40,22 +40,22 @@ extension GeminiSDK: AIAgentModel {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
     /// - Returns: A wrapper of all types of output of Gemini that contains strong typed value
-    public func run<T: AIModelSchema>(prompt: String,
-                                      outputSchema: T.Type? = nil,
-                                      toolSchemas: [String]? = nil,
-                                      modalities: [Modality]? = [.text],
-                                      inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
+    public func run(prompt: String,
+                    outputSchema: AIModelSchema.Type,
+                    toolSchemas: [String]? = nil,
+                    modalities: [Modality]? = [.text],
+                    inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
 
         let result = try await run(prompt: prompt,
-                                   outputSchema: outputSchema?.outputSchema,
+                                   outputSchema: outputSchema.outputSchema,
                                    toolSchemas: toolSchemas,
                                    modalities: modalities,
                                    inlineData: inlineData)
         if case let .text(jsonString) = result.firstText {
-            let value = try JSONDecoder().decode(T.self, from: Data(jsonString.utf8))
+            let value = try JSONDecoder().decode(outputSchema, from: Data(jsonString.utf8))
             return [.strongTypedValue(value)] + result.allFunctionCallOutputs
         }
-        throw Error.wrongResponse
+        throw Error.invalidData
     }
 }
 

@@ -3,9 +3,7 @@ import GeminiSDK
 
 enum GminiSpeechGeneration {
     static func run() async throws {
-        let gemini = GeminiSDK(model: "gemini-2.5-flash-preview-tts",
-                               apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
-
+        let gemini = GeminiSDK(model: geminiTTSModel, apiKey: geminiAPIKey)
         let speechConfig = GeminiRequest.GenerationConfig.SpeechConfig(voiceConfig: .init(prebuiltVoiceConfig: .init(voiceName: .Achernar)))
         let request = GeminiRequest(contents: [.init(parts: [.init(text: "Say cheerfully: Have a wonderful day!")])],
                                     generationConfig: .init(responseModalities: [.audio],

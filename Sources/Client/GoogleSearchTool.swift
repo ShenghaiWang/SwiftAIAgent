@@ -6,16 +6,17 @@ import SwiftAIAgent
 
 struct GoogleSearchTool {
     static func run() async throws {
-        let gemini = GeminiSDK(model: "gemini-2.5-flash",
-                               apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+        let gemini = GeminiSDK(model: geminiModel,
+                               apiKey: geminiAPIKey)
         let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
         let key = ProcessInfo.processInfo.environment["key"] ?? ""
         let draftAgent = AIAgent(title: "Draft article",
                                  model: gemini,
                                  tools: [GoogleSearch(cx: cx, key: key)],
                                  context: nil,
-                                 instruction: """
-                         Search "AI" using search  tool
+                                 instruction:
+                         """
+                         * Search "Computer science" using search tool
                          """
         )
         let step = Workflow.Step.single(draftAgent)

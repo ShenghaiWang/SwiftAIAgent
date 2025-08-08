@@ -62,11 +62,13 @@ public actor GoalManager {
     /// - Throws: `GoalManager.Error.needClarification(questions: [String])` in case of needing clarification for the goal.
     /// - Throws: `Swift.Error` in case of any network error or LLM error.
     public func run() async throws -> [AIAgentOutput] {
+        logger.debug("\n===Checking Goal===\n")
         let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
         logger.debug("\n===Clarification Questions===\n\(clarification)\n")
         if !clarification.questions.isEmpty {
             throw Error.needClarification(questions: clarification.questions)
         }
+        logger.debug("\n===Starting Planning===\n")
         let task: AITask = try await runAICommand(planInstructions)
         logger.debug("\n===Tasks planned===\n\(task)\n")
         let workflow = try await workflow(for: task)
@@ -99,28 +101,46 @@ public actor GoalManager {
 
         var agentIds: [UUID] = []
         var steps: [Workflow.Step] = []
-        for task in subTasks { // TODO: Smarter workflow generation, sequence or paralletl? tools/mcpserver assignment etc.
-            let context = AIAgentContext("<finalGoal>\(self.goal)</finalGoal>")
+        for subtask in subTasks { // TODO: Smarter workflow generation, sequence or paralletl? tools/mcpserver assignment etc.
+            let context = AIAgentContext(
+                """
+                <finalGoal>\(self.goal)</finalGoal>
+                <agentSetup>\(task.agentSetup)</agentSetup>
+                You are agent `\(subtask.name)` and your goal is `\(subtask.details)`
+                """
+            )
             let taskTools: [AIAgentTool] =
-            if let subTaskTool = task.tools {
-                tools.filter { !Set($0.methodMap.keys).union(Set(subTaskTool)).isEmpty }
+            if let subTaskTool = subtask.tools {
+                tools.filter { !Set($0.methodMap.keys).intersection(Set(subTaskTool)).isEmpty }
             } else {
                 []
             }
             let taskMCPServers: [MCPServer] = [] // TODO: refine mcp servers
-            let agent = AIAgent(title: task.name,
+            let agent = AIAgent(title: subtask.name,
                                 model: model,
                                 tools: taskTools,
                                 mcpServers: taskMCPServers,
                                 context: context,
-                                instruction: task.details)
-            for id in agentIds.dropLast() { // TODO: refine input flow
-                await agent.add(input: id)
-            }
+                                instruction: subtask.details)
+            // TODO: refine input flow
+//            for id in agentIds.dropLast() {
+//                await agent.add(input: id)
+//            }
             agentIds.append(agent.id)
             // TODO: Adjust data flow input if needed
             steps.append(Workflow.Step.single(agent))
         }
         return Workflow(step: .sequence(steps))
+    }
+}
+
+extension AITask {
+    var agentSetup: String {
+        """
+        There are \(subTasks?.count ?? 0) agents to work collaboratively on this goal.
+        \((subTasks ?? []).enumerated().map({ index, agent in
+            "<agent \(index + 1)>name: \(agent.name) \ntask:\(agent.details)</agent \(index + 1)>"
+        }).joined(separator: "\n"))
+        """
     }
 }

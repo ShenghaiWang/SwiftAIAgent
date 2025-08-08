@@ -56,26 +56,7 @@ public final actor AIAgent: Sendable {
                     outputSchema: String? = nil,
                     modalities: [Modality] = [.text],
                     inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
-        let combinedPrompt = await combined(prompt: prompt)
-        logger.debug("\n\(description)\n===Input===\n\(combinedPrompt)\n")
-        var result = try await model.run(prompt: combinedPrompt,
-                                         outputSchema: outputSchema,
-                                         toolSchemas: toolDefinitions,
-                                         modalities: modalities,
-                                         inlineData: inlineData)
-        await Runtime.shared.set(output: result, for: id, title: title)
-        let allFunctionCalls = result.allFunctionCalls
-        if !allFunctionCalls.isEmpty {
-            logger.debug("\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n")
-            logger.debug("\n\(description)\n===Calling tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
-            result += try await callTools(with: allFunctionCalls)
-            await Runtime.shared.set(output: result, for: id, title: title)
-            logger.debug("\n\(description)\n===Rerun agent with result from tools===\n")
-            let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
-            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema, modalities: modalities, inlineData: inlineData)
-        }
-        logger.debug("\n\(description)\n===Output===\n\(result.allTexts)\n")
-        return result
+        try await runInternal(prompt: prompt, outputSchema: outputSchema, modalities: modalities, inlineData: inlineData)
     }
 
     /// Run agent for the task with the prompt
@@ -85,28 +66,47 @@ public final actor AIAgent: Sendable {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the inlineData to be working with prompt
     /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
-    public func run<T: AIModelSchema>(prompt: String,
-                                      outputSchema: T.Type,
-                                      modalities: [Modality] = [.text],
-                                      inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
+    public func run(prompt: String,
+                    outputSchema: AIModelSchema.Type,
+                    modalities: [Modality] = [.text],
+                    inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
+        try await runInternal(prompt: prompt, outputSchema: outputSchema, modalities: modalities, inlineData: inlineData)
+    }
+
+    private func runInternal<T>(prompt: String,
+                                outputSchema: T,
+                                modalities: [Modality] = [.text],
+                                inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n\(description)\n===Input===\n\(combinedPrompt)\n")
-        var result = try await model.run(prompt: combinedPrompt,
-                                         outputSchema: outputSchema,
-                                         toolSchemas: toolDefinitions,
-                                         modalities: modalities,
-                                         inlineData: inlineData)
+        var result: [AIAgentOutput] = if let schema = outputSchema as? AIModelSchema.Type {
+            try await model.run(prompt: combinedPrompt,
+                                outputSchema: schema,
+                                toolSchemas: toolDefinitions,
+                                modalities: modalities,
+                                inlineData: inlineData)
+        } else {
+            try await model.run(prompt: combinedPrompt,
+                                outputSchema: outputSchema as? String,
+                                toolSchemas: toolDefinitions,
+                                modalities: modalities,
+                                inlineData: inlineData)
+        }
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
         if !allFunctionCalls.isEmpty {
             logger.debug("\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n")
             logger.debug("\n\(description)\n===Calling tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
-            result += try await callTools(with: allFunctionCalls)
+            result = await callTools(with: allFunctionCalls)
             await Runtime.shared.set(output: result, for: id, title: title)
-            logger.debug("\n\(description)\n===Rerun agent with result from tools===\n")
+            logger.debug("\n\(description)\n===Rerun agent with result from tools===\n\(result.allTexts)\n")
             let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
-            result += try await run(prompt: combinedPrompt, outputSchema: outputSchema, modalities: modalities, inlineData: inlineData)
+            result += try await runInternal(prompt: combinedPrompt,
+                                            outputSchema: outputSchema,
+                                            modalities: modalities,
+                                            inlineData: inlineData)
         }
+        await Runtime.shared.set(output: result, for: id, title: title)
         logger.debug("\n\(description)\n===Output===\n\(result.allTexts)\n")
         return result
     }
@@ -121,10 +121,10 @@ public final actor AIAgent: Sendable {
         }
         for uuid in inputs {
             if let cache = await Runtime.shared.output(of: uuid) {
-                contents.append("<\(resultTag) \(cache.title)>\(cache.output.allTexts)</\(resultTag) \(cache.title))>")
+                contents.append("<\(resultTag)><\(cache.title)>\(cache.output.allTexts.joined(separator: "\n"))</\(cache.title)></\(resultTag)>")
             }
         }
-        contents.append(prompt)
+        contents.append("<result_of_the_previous_step>\(prompt)</result_of_the_previous_step>")
         return contents.joined()
     }
 
@@ -135,20 +135,33 @@ public final actor AIAgent: Sendable {
         inputs.append(agentId)
     }
 
-    private func callTools(with allFunctionCalls: [String]) async throws -> [AIAgentOutput] {
-        let valueForToolCallings = allFunctionCalls.compactMap(ValueForToolCalling.init(value:))
+    private func callTools(with allFunctionCalls: [String]) async -> [AIAgentOutput] {
+        let toolCallingValues = allFunctionCalls.compactMap(ToolCallingValue.init(value:))
         var results: [AIAgentOutput] = []
-        for valueForToolCalling in valueForToolCallings {
+        for toolCallingValue in toolCallingValues {
             for tool in tools {
-                let callResult = try await tool.call(valueForToolCalling.name, args: valueForToolCalling.args)
-                results.append(
-                    .text(
+                do {
+                    let callResult = try await tool.call(toolCallingValue.name, args: toolCallingValue.args)
+                    results.append(
+                        .text(
                         """
-                        <Result_of_calling_function_\(valueForToolCalling.name)>
+                        <Result_of_calling_function_\(toolCallingValue.name)>
+                        <args>\(toolCallingValue.argsString)</args>
                         \(callResult ?? "")
-                        </Result_of_calling_function_\(valueForToolCalling.name)>
+                        </Result_of_calling_function_\(toolCallingValue.name)>
                         """
-                    ))
+                        ))
+                } catch {
+                    results.append(
+                        .text(
+                        """
+                        <Result_of_calling_function_\(toolCallingValue.name)>
+                        <args>\(toolCallingValue.argsString)</args>
+                        \(error.localizedDescription)
+                        </Result_of_calling_function_\(toolCallingValue.name)>
+                        """
+                        ))
+                }
             }
         }
         return results

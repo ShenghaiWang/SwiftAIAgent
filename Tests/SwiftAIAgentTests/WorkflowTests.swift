@@ -13,7 +13,7 @@ struct WorkflowTests {
         #expect(result.allTexts.joined(separator: "\n") ==
             """
             Agent 1:
-            hello world
+            <result_of_the_previous_step>hello world</result_of_the_previous_step>
             """)
     }
 
@@ -27,8 +27,8 @@ struct WorkflowTests {
         #expect(result.allTexts.joined(separator: "\n") ==
                 """
                 Agent 2:
-                Agent 1:
-                hello world
+                <result_of_the_previous_step>Agent 1:
+                <result_of_the_previous_step>hello world</result_of_the_previous_step></result_of_the_previous_step>
                 """)
     }
 
@@ -42,23 +42,23 @@ struct WorkflowTests {
         #expect(result.allTexts.joined(separator: "\n") ==
                 """
                 Agent 1:
-                hello world
+                <result_of_the_previous_step>hello world</result_of_the_previous_step>
                 Agent 2:
-                hello world
+                <result_of_the_previous_step>hello world</result_of_the_previous_step>
                 """
                 ||
                 result.allTexts.joined(separator: "\n") ==
                 """
                 Agent 2:
-                hello world
+                <result_of_the_previous_step>hello world</result_of_the_previous_step>
                 Agent 1:
-                hello world
+                <result_of_the_previous_step>hello world</result_of_the_previous_step>
                 """
         )
     }
 
 
-    @Test(arguments: [(true, "Agent 1:\nhello world"),
+    @Test(arguments: [(true, "Agent 1:\n<result_of_the_previous_step>hello world</result_of_the_previous_step>"),
                       (false , "")])
     func testConditionalWorkflow(condition: Bool, output: String) async throws {
         let agent1 = AIAgent(title: "", model: MockModel(id: 1))

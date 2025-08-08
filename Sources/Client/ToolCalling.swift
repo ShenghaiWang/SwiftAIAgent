@@ -16,8 +16,8 @@ enum ToolCalling {
     }
 
     static func run() async throws {
-        let gemini = GeminiSDK(model: "gemini-2.5-flash",
-                               apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+        let gemini = GeminiSDK(model: geminiModel,
+                               apiKey: geminiAPIKey)
         let context = AIAgentContext("Get weather")
         let agent = AIAgent(title: "Weahter Agent",
                             model: gemini,
