@@ -12,10 +12,11 @@ struct GoogleSearchTool {
         let key = ProcessInfo.processInfo.environment["key"] ?? ""
         let draftAgent = AIAgent(title: "Draft article",
                                  model: gemini,
-                                 tools: [GoogleSearch(cx: cx, key: key)],
+                                 tools: [GoogleSearch(cx: cx, key: key), Fetch(), FileIO(baseFolder: ".")],
                                  context: nil,
-                                 instruction: """
-                         Search "AI" using search  tool
+                                 instruction:
+                         """
+                         Search "AI" using search tool and save contents of the target pages
                          """
         )
         let step = Workflow.Step.single(draftAgent)

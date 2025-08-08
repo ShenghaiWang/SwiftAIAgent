@@ -1,11 +1,11 @@
 import Foundation
 
-struct ValueForToolCalling: Sendable {
+struct ToolCallingValue: Sendable {
     let name: String
     let args: [String: Data]
 }
 
-extension ValueForToolCalling {
+extension ToolCallingValue {
     /// init from json string in format {"name":"getWeather","args":{"city":"Sydney", "date": { "month":"Jan", "day": "1" }}}
     init?(value: String) {
         guard let data = value.data(using: .utf8),
@@ -34,5 +34,18 @@ extension ValueForToolCalling {
         }
         self.name = name
         self.args = args
+    }
+}
+
+extension ToolCallingValue {
+    var argsString: String {
+        let keyValus = args.reduce(into: "") { partialResult, value in
+            partialResult.append(contentsOf:
+                """
+                "\(value.key)":\(String(data: value.value, encoding: .utf8) ?? "")
+                """
+            )
+        }
+        return "{\(keyValus)}"
     }
 }

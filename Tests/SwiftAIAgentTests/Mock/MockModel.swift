@@ -5,11 +5,11 @@ import AIAgentMacros
 struct MockModel: AIAgentModel {
     var description: String { "" }
     
-    func run<T: AIModelSchema>(prompt: String,
-                               outputSchema: T.Type?,
-                               toolSchemas: [String]? = nil,
-                               modalities: [Modality]? = nil,
-                               inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
+    func run(prompt: String,
+             outputSchema: AIModelSchema.Type,
+             toolSchemas: [String]? = nil,
+             modalities: [Modality]? = nil,
+             inlineData: InlineData? = nil) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
         return [.text(result)]
     }
