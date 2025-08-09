@@ -55,7 +55,7 @@ extension GeminiSDK: AIAgentModel {
             let value = try JSONDecoder().decode(outputSchema, from: Data(jsonString.utf8))
             return [.strongTypedValue(value)] + result.allFunctionCallOutputs
         }
-        throw Error.wrongResponse
+        throw Error.invalidData
     }
 }
 
