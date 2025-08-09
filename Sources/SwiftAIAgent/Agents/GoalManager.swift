@@ -103,7 +103,7 @@ public actor GoalManager {
             let context = AIAgentContext("<finalGoal>\(self.goal)</finalGoal>")
             let taskTools: [AIAgentTool] =
             if let subTaskTool = task.tools {
-                tools.filter { !Set($0.methodMap.keys).union(Set(subTaskTool)).isEmpty }
+                tools.filter { !Set($0.methodMap.keys).intersection(Set(subTaskTool)).isEmpty }
             } else {
                 []
             }
