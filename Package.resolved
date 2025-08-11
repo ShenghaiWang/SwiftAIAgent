@@ -1,10 +1,10 @@
 {
-  "originHash" : "092ea215257143eceb547ac00c38fd8b42bc7e8ec2b72b756e234bdf98aa9d81",
+  "originHash" : "f5bc58465c88ace5babb0144982d71f55cb978802cdc27aa296622af603384e6",
   "pins" : [
     {
       "identity" : "eventsource",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/loopwork-ai/eventsource.git",
+      "location" : "https://github.com/mattt/eventsource.git",
       "state" : {
         "revision" : "07957602bb99a5355c810187e66e6ce378a1057d",
         "version" : "1.1.1"
@@ -20,12 +20,12 @@
       }
     },
     {
-      "identity" : "swift-mcp-sdk",
+      "identity" : "swift-sdk",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShenghaiWang/swift-mcp-sdk.git",
+      "location" : "https://github.com/modelcontextprotocol/swift-sdk.git",
       "state" : {
-        "branch" : "BearerAuthorization",
-        "revision" : "a2be3028e19e3882ce42cee57783c2d7abd86421"
+        "revision" : "e76d61155bf00482ea8f2ff78fca08a4eece410e",
+        "version" : "0.10.0"
       }
     },
     {

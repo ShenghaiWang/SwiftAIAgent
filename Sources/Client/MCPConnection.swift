@@ -16,10 +16,6 @@ enum MCPConnection {
         ProcessInfo.processInfo.environment["GitHubToken"] ?? ""
     }
 
-    var headers: [String: String] {
-        ["Authorization": "Bearer \(gitHubToken)"]
-    }
-
     func connect() async throws {
         switch self {
         case .mcpxcodebuild:
@@ -32,9 +28,11 @@ enum MCPConnection {
     private func connectToGitHub() async throws {
         let transport = HTTPClientTransport(
             endpoint: URL(string: "https://api.githubcopilot.com/mcp/")!,
-            headers: headers,
-            streaming: true // Enable Server-Sent Events for real-time updates if supported
-        )
+            streaming: true) { urlRequest in
+                var newUrlRequest = urlRequest
+                newUrlRequest.setValue("Bearer \(gitHubToken)", forHTTPHeaderField: "Authorization")
+                return newUrlRequest
+            }
         let client = Client(name: "SwiftAIAgent", version: "1.0.0")
         let result = try await client.connect(transport: transport)
 

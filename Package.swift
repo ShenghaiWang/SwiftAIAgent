@@ -21,7 +21,7 @@ let package = Package(
         .executable(name: "Client", targets: ["Client"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/ShenghaiWang/swift-mcp-sdk.git", branch: "BearerAuthorization"),
+        .package(url: "https://github.com/modelcontextprotocol/swift-sdk.git", from: "0.10.0"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0-latest"),
         .package(url: "https://github.com/apple/swift-system", from: "1.6.1"),
     ],
@@ -29,7 +29,7 @@ let package = Package(
                       dependencies: [
                         "AIAgentMacros",
                         "GeminiSDK",
-                        .product(name: "MCP", package: "swift-mcp-sdk"),
+                        .product(name: "MCP", package: "swift-sdk"),
                       ]),
               .target(name: "AITools",
                       dependencies: [
@@ -76,7 +76,7 @@ let package = Package(
                                     "SwiftAIAgent",
                                     "AITools",
                                     .product(name: "SystemPackage", package: "swift-system"),
-                                    .product(name: "MCP", package: "swift-mcp-sdk"),
+                                    .product(name: "MCP", package: "swift-sdk"),
                                 ]),
     ]
 )
