@@ -13,7 +13,7 @@ public actor GoalManager {
     let goal: String
     let models: [AIAgentModel]
     let tools: [any AIAgentTool]
-    let mcpServers: [any MCPServer]
+    let mcpServers: [MCPServer]
 
     private(set) var clarifications: [String] = []
 
@@ -49,7 +49,7 @@ public actor GoalManager {
                 managerAgent: AIAgent,
                 models: [AIAgentModel],
                 tools: [any AIAgentTool] = [],
-                mcpServers: [any MCPServer] = []) {
+                mcpServers: [MCPServer] = []) {
         self.goal = goal
         self.managerAgent = managerAgent
         self.models = models
@@ -116,12 +116,12 @@ public actor GoalManager {
                 []
             }
             let taskMCPServers: [MCPServer] = [] // TODO: refine mcp servers
-            let agent = AIAgent(title: subtask.name,
-                                model: model,
-                                tools: taskTools,
-                                mcpServers: taskMCPServers,
-                                context: context,
-                                instruction: subtask.details)
+            let agent = try await AIAgent(title: subtask.name,
+                                          model: model,
+                                          tools: taskTools,
+                                          mcpServers: taskMCPServers,
+                                          context: context,
+                                          instruction: subtask.details)
             // TODO: refine input flow
 //            for id in agentIds.dropLast() {
 //                await agent.add(input: id)

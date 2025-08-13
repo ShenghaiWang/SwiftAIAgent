@@ -21,9 +21,9 @@ enum AgentWorkflow {
         let managerAgent: AIAgent
         let goalManager: GoalManager
 
-        init(model: AIAgentModel, goal: String) {
+        init(model: AIAgentModel, goal: String) async throws {
             self.model = model
-            self.managerAgent = AIAgent(title: "Manager", model: model)
+            self.managerAgent = try await AIAgent(title: "Manager", model: model)
             let fileIO = FileIO(baseFolder: ".")
             let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
             let key = ProcessInfo.processInfo.environment["key"] ?? ""
@@ -64,23 +64,23 @@ enum AgentWorkflow {
                                  A few agents work on this task.
                                  """)
 
-        let draftAgent = AIAgent(title: "Draft article",
-                                 model: gemini,
-                                 context: context,
-                                 instruction: """
+        let draftAgent = try await AIAgent(title: "Draft article",
+                                           model: gemini,
+                                           context: context,
+                                           instruction: """
                                  You are an expert in writing articles based on your knowledge.
                                  """)
-        let reviewAgent = AIAgent(title: "Review",
-                                  model: gemini,
-                                  context: context,
-                                  instruction: """
+        let reviewAgent = try await AIAgent(title: "Review",
+                                            model: gemini,
+                                            context: context,
+                                            instruction: """
                                 You are an expert in reviewing articles. Please review and improve the article you are given.
                                 """)
-        let finaliserAgent = AIAgent(title: "Finaliser",
-                                     model: gemini,
-                                     tools: [FileIO(baseFolder: ".")],
-                                     context: context,
-                                     instruction: """
+        let finaliserAgent = try await AIAgent(title: "Finaliser",
+                                               model: gemini,
+                                               tools: [FileIO(baseFolder: ".")],
+                                               context: context,
+                                               instruction: """
                                 You are an expert in finialising articles. Please finalise the article based on the draft and review. 
                                 Save it in article.md file eventually."
                                 """)
@@ -97,13 +97,13 @@ enum AgentWorkflow {
 
     private func runAutomaticFlow() async throws {
         let model = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
-        let autoWorkflow = AutoWorkflow(model: model,
-                                        goal:
+        let autoWorkflow = try await AutoWorkflow(model: model,
+                                                  goal:
             """
             * Search "Computer science"
             * Save the top 10 url of search result in 1.txt file
             """
-            )
+        )
         try await autoWorkflow.run()
     }
 }

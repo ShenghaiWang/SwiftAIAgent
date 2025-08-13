@@ -1,5 +1,6 @@
 import Foundation
 import AIAgentMacros
+import MCP
 
 /// AIAgent type that wrap llm, context, instruction, tools, mcp servers that can work independently for a single task.
 public final actor AIAgent: Sendable {
@@ -14,10 +15,11 @@ public final actor AIAgent: Sendable {
     nonisolated let context: AIAgentContext?
     nonisolated let model: AIAgentModel
     nonisolated let tools: [any AIAgentTool]
-    nonisolated let mcpServers: [any MCPServer]
+    nonisolated let mcpServers: [MCPServer]
     nonisolated let instruction: String?
     private(set) var inputs: [UUID] = []
-
+    private let mcpClients: [UUID: Client]
+    private(set) var mcpTools: [UUID: [MCP.Tool]] = [:]
     /// Initialise an AI Agent
     /// - Parameters:
     ///  - title: The name of the agent
@@ -29,9 +31,9 @@ public final actor AIAgent: Sendable {
     public init(title: String,
                 model: AIAgentModel,
                 tools: [any AIAgentTool] = [],
-                mcpServers: [any MCPServer] = [],
+                mcpServers: [MCPServer] = [],
                 context: AIAgentContext? = nil,
-                instruction: String? = nil) {
+                instruction: String? = nil) async throws {
         self.title = title
         self.model = model
         self.context = context
@@ -39,10 +41,25 @@ public final actor AIAgent: Sendable {
         self.mcpServers = mcpServers
         self.instruction = instruction
         inputs.append(id)
+        mcpClients = try await mcpServers.async.map { try await $0.connect() }.collect()
+            .reduce(into: [UUID: Client](), { result, client in
+                result[UUID()] = client
+            })
+        for (key, client) in mcpClients {
+            var allTools: [MCP.Tool] = []
+            var (tools, nextCursor) = try await client.listTools()
+            allTools.append(contentsOf: tools)
+            while nextCursor != nil {
+                let (tools, cursor) = try await client.listTools(cursor: nextCursor)
+                nextCursor = cursor
+                allTools.append(contentsOf: tools)
+            }
+            mcpTools[key] = allTools
+        }
     }
 
     var toolDefinitions: [String] {
-        tools.toolDefinitions
+        tools.toolDefinitions + mcpTools.values.flatMap{ $0.map(\.toolDefinition) }
     }
 
     /// Rum prompt with LLM with structured output schema
@@ -98,9 +115,13 @@ public final actor AIAgent: Sendable {
             logger.debug("\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n")
             logger.debug("\n\(description)\n===Calling tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
             result = await callTools(with: allFunctionCalls)
+            logger.debug("\n\(description)\n===Result after calling tools===\n\(result.allTexts)\n")
+            logger.debug("\n\(description)\n===Calling MCP Server tools===\n\(allFunctionCalls.joined(separator: ";"))\n")
+            result += await callMCPServers(with: allFunctionCalls)
+            logger.debug("\n\(description)\n===Result after calling MCP Server  tools===\n\(result.allTexts)\n")
             await Runtime.shared.set(output: result, for: id, title: title)
-            logger.debug("\n\(description)\n===Rerun agent with result from tools===\n\(result.allTexts)\n")
             let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
+            logger.debug("\n\(description)\n===Re-run agent after calling tools===\n\(result.allTexts)\n")
             result += try await runInternal(prompt: combinedPrompt,
                                             outputSchema: outputSchema,
                                             modalities: modalities,
@@ -162,6 +183,37 @@ public final actor AIAgent: Sendable {
                         """
                         ))
                 }
+            }
+        }
+        return results
+    }
+
+    private func callMCPServers(with allFunctionCalls: [String]) async -> [AIAgentOutput] {
+        let toolCallingValues = allFunctionCalls.compactMap(ToolCallingValue.init(value:))
+        var results: [AIAgentOutput] = []
+        for toolCallingValue in toolCallingValues {
+            guard let clientKey = mcpTools.filter({ $0.value.compactMap(\.name).contains(toolCallingValue.name) }).first?.key,
+                  let mcpClient = mcpClients[clientKey] else {
+                continue
+            }
+            do {
+                let callResult = try await mcpClient.callTool(
+                    name: toolCallingValue.name,
+                    arguments: toolCallingValue.args
+                        .mapValues { (try? JSONDecoder().decode(Value.self, from: $0)) ?? .string("") })
+                results.append(.text("<Result_of_calling_function_\(toolCallingValue.name)>"))
+                results.append(contentsOf: callResult.content.map(\.aiAgentOutput))
+                results.append(.text("</Result_of_calling_function_\(toolCallingValue.name)>"))
+            } catch {
+                results.append(
+                    .text(
+                            """
+                            <Result_of_calling_function_\(toolCallingValue.name)>
+                            <args>\(toolCallingValue.argsString)</args>
+                            \(error.localizedDescription)
+                            </Result_of_calling_function_\(toolCallingValue.name)>
+                            """
+                    ))
             }
         }
         return results
