@@ -19,11 +19,11 @@ enum ToolCalling {
         let gemini = GeminiSDK(model: geminiModel,
                                apiKey: geminiAPIKey)
         let context = AIAgentContext("Get weather")
-        let agent = AIAgent(title: "Weahter Agent",
-                            model: gemini,
-                            tools: [ToolStruct()],
-                            context: context,
-                            instruction: "")
+        let agent = try await AIAgent(title: "Weahter Agent",
+                                      model: gemini,
+                                      tools: [ToolStruct()],
+                                      context: context,
+                                      instruction: "")
         let result = try await agent.run(prompt: "Get weather for Sydney")
         print(result)
     }

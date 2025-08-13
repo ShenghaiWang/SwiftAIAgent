@@ -14,8 +14,7 @@ let geminiTTSModel = "gemini-2.5-flash-preview-tts"
 
 
 // MCP connection example
-try await MCPConnection.github.connect()
-//try await MCPConnection.mcpxcodebuild.connect()
+try await MCPConnection().run()
 
 // Workflow example
 //try await AgentWorkflow.manual.run()
@@ -31,4 +30,7 @@ try await MCPConnection.github.connect()
 //try await GminiSpeechGeneration.run()
 
 // Google search tool
+//try await GoogleSearchTool.run()
+
+// Tool & MCP
 //try await GoogleSearchTool.run()

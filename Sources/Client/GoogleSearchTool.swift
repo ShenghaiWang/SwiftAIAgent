@@ -10,11 +10,11 @@ struct GoogleSearchTool {
                                apiKey: geminiAPIKey)
         let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
         let key = ProcessInfo.processInfo.environment["key"] ?? ""
-        let draftAgent = AIAgent(title: "Draft article",
-                                 model: gemini,
-                                 tools: [GoogleSearch(cx: cx, key: key)],
-                                 context: nil,
-                                 instruction:
+        let draftAgent = try await AIAgent(title: "Draft article",
+                                           model: gemini,
+                                           tools: [GoogleSearch(cx: cx, key: key)],
+                                           context: nil,
+                                           instruction:
                          """
                          * Search "Computer science" using search tool
                          """
