@@ -9,6 +9,33 @@ Leverage ‎`Swift` to build AI Agent systems that are both simple and swift.
 
 ## Usage
 
+There are demos in `main.swift` in `Client` target. You can run them directly to understand how it works.
+Please note, need to configure the environment varibales `GEMINI_API_KEY`, `GitHubToken`(for GitHub MCP Server), `cx` & `key` (for Google search tool).
+
+```swift
+// MCP connection example
+try await MCPConnection().run()
+
+// Workflow example
+try await AgentWorkflow.manual.run()
+try await AgentWorkflow.automatic.run()
+
+// Tool calling example
+try await ToolCalling.run()
+
+// Gemini Image Generation
+try await GminiImageGeneration.run()
+
+// Gemini Speech Generation
+try await GminiSpeechGeneration.run()
+
+// Google search tool
+try await GoogleSearchTool.run()
+
+// Tool & MCP
+try await GoogleSearchTool.run()
+```
+
 ### Auto workflow
 
 ```swift
@@ -17,47 +44,41 @@ let autoWorkflow = AutoWorkflow(model: model, goal: "Write an article about hist
 try await autoWorkflow.run()
 ```
 
-Let AI model figure out what's the best to do. Only support sequence flow at the moment.
+Let AI model figure out what's the best to do. Only support sequence flow at the moment. It might ask clarification question depending on your goal. If you think you want it run without futher questions, just input `run without more questions` to kick off the workflow.
+
+#### What this can do depends on the tools/mcp servers we configure, for example:
+
+- with `GoogleSearch`, `Fetch`, `FileIO` tools, it can achive goals like: 
+
+```
+Write a summary of developments in computer science over the past 12 months, 
+using information from the top 10 websites in the search results and save it in a markdown file.
+```
+The result of my last run of this goal was [computer_science_developments.md](./Examples/computer_science_developments.md)
+
+- with `GitHub MCP Server`, we can ask it to perform all the tasks this mcp server provides like:
+```
+Get all the tags of https://github.com/ShenghaiWang/SwiftAIAgent.git
+```
+The result of my last run of this goal was `"The following tags were found for the repository: v0.0.4, v0.0.3, v0.0.2, v0.0.1")`
 
 ### Mannal workflow
 
 ```swift
-let gemini = GeminiSDK(model: "gemini-2.5-flash",
-                       apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
-
-
-let context = AIAgentContext("""
-                         The task is to write an essay about the history of AI.
-                         A few agents work on this task.
-                         """)
-
-
 let draftAgent = AIAgent(title: "Draft article",
                          model: gemini,
-                         context: context,
-
-                         instruction: """
-                         You are an expert in writing articles based on your knowledge.
-                         """)
+                         instruction: "Please draft an article about the history of AI")
 let reviewAgent = AIAgent(title: "Review",
                           model: gemini,
-                          context: context,
-                          instruction: """
-                        You are an expert in reviewing articles. Please review and improve the article you are given.
-                        """)
+                          instruction: "Please review the draft and give your feedback.")
 let finaliserAgent = AIAgent(title: "Finaliser",
                              model: gemini,
-                             context: context,
-                             instruction: """
-                        You are an expert in finialising articles. Please finalise the article based on the draft and review
-                        """)
-
+                             instruction: "Please finalise this article based on the draft and review")
 await finaliserAgent.add(input: draftAgent.id)
 let draftStep = Workflow.Step.single(draftAgent)
 let reviewStep = Workflow.Step.single(reviewAgent)
 let finaliseStep = Workflow.Step.single(finaliserAgent)
 let workflow = Workflow(step: .sequence([draftStep, reviewStep, finaliseStep]))
-
 let result = try await workflow.run(prompt: "Let's write this artile")
 ```
 
@@ -132,6 +153,20 @@ let agent = AIAgent(title: "Weahter Agent",
                     instruction: "")
 let result = try await agent.run(prompt: "Get weather for Sydney")
 print(result)
+```
+## Use MCP Servers
+
+```swift
+let gemini = GeminiSDK(model: geminiModel,
+                       apiKey: geminiAPIKey)
+let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
+let testAgent = try await AIAgent(title: "Draft article",
+                                   model: gemini,
+                                   mcpServers: [.http(url: gitHubURL, token: gitHubToken)],
+                                   instruction: "Get all the tags of this repo https://github.com/ShenghaiWang/SwiftLlama")
+let step = Workflow.Step.single(testAgent)
+let workflow = Workflow(step: step)
+let result = try await workflow.run(prompt: "start")
 ```
 
 ## Early stage

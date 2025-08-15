@@ -13,7 +13,6 @@ struct GoogleSearchTool {
         let draftAgent = try await AIAgent(title: "Draft article",
                                            model: gemini,
                                            tools: [GoogleSearch(cx: cx, key: key)],
-                                           context: nil,
                                            instruction:
                          """
                          * Search "Computer science" using search tool

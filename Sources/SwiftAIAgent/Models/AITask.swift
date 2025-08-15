@@ -26,7 +26,7 @@ struct AISubTask {
     /// A descriptive name of the task
     let name: String
 
-    /// The details a task needs to do
+    /// The details a task needs to do. This is be fed to LLM as prompt.
     let details: String
 
     /// The condition to run this step

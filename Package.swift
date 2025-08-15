@@ -24,6 +24,7 @@ let package = Package(
         .package(url: "https://github.com/modelcontextprotocol/swift-sdk.git", from: "0.10.0"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0-latest"),
         .package(url: "https://github.com/apple/swift-system", from: "1.6.1"),
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.10.1"),
     ],
     targets: [.target(name: "SwiftAIAgent",
                       dependencies: [
@@ -34,6 +35,7 @@ let package = Package(
               .target(name: "AITools",
                       dependencies: [
                         "AIAgentMacros",
+                        .product(name: "SwiftSoup", package: "SwiftSoup"),
                       ]),
               .target(name: "GeminiSDK",
                       dependencies: [

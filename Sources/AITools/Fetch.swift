@@ -1,5 +1,6 @@
 import Foundation
 import AIAgentMacros
+import SwiftSoup
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -24,6 +25,12 @@ public struct Fetch {
         guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode, 200..<300 ~= statusCode else {
             throw Error.invalidResponse(responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode ?? 0)
         }
-        return String(data: data, encoding: .utf8)
+        guard let html = String(data: data, encoding: .utf8) else { return nil }
+        do {
+            let doc = try SwiftSoup.parse(html)
+            return try doc.text()
+        } catch {
+            return nil
+        }
     }
 }
