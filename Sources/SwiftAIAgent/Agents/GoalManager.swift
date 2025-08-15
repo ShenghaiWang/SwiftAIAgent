@@ -123,9 +123,9 @@ public actor GoalManager {
                                           context: context,
                                           instruction: subtask.details)
             // TODO: refine input flow
-//            for id in agentIds.dropLast() {
-//                await agent.add(input: id)
-//            }
+            for id in agentIds.dropLast() {
+                await agent.add(input: id)
+            }
             agentIds.append(agent.id)
             // TODO: Adjust data flow input if needed
             steps.append(Workflow.Step.single(agent))

@@ -14,11 +14,11 @@ let geminiTTSModel = "gemini-2.5-flash-preview-tts"
 
 
 // MCP connection example
-try await MCPConnection().run()
+//try await MCPConnection().run()
 
 // Workflow example
 //try await AgentWorkflow.manual.run()
-//try await AgentWorkflow.automatic.run()
+try await AgentWorkflow.automatic.run()
 
 // Tool calling example
 //try await ToolCalling.run()

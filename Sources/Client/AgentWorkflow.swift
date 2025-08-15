@@ -27,12 +27,16 @@ enum AgentWorkflow {
             let fileIO = FileIO(baseFolder: ".")
             let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
             let key = ProcessInfo.processInfo.environment["key"] ?? ""
+            let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
+            let gitHubToken = ProcessInfo.processInfo.environment["GitHubToken"] ?? ""
             self.goalManager = GoalManager(goal: goal,
                                            managerAgent: managerAgent,
                                            models: [model],
                                            tools: [fileIO,
                                                    GoogleSearch(cx: cx, key: key),
-                                                  ])
+                                                   Fetch()
+                                                  ],
+                                           mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
         }
 
         func run() async throws {
@@ -100,8 +104,7 @@ enum AgentWorkflow {
         let autoWorkflow = try await AutoWorkflow(model: model,
                                                   goal:
             """
-            * Search "Computer science"
-            * Save the top 10 url of search result in 1.txt file
+            Get all the tags of https://github.com/ShenghaiWang/SwiftAIAgent.git
             """
         )
         try await autoWorkflow.run()

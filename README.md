@@ -9,6 +9,33 @@ Leverage ‎`Swift` to build AI Agent systems that are both simple and swift.
 
 ## Usage
 
+There are demos in `main.swift` in `Client` target. You can run them directly to understand how it works.
+Please note, need to configure the environment varibales `GEMINI_API_KEY`, `GitHubToken`(For GitHub MCP Server), `cx` & `key` (for Google search tool).
+
+```swift
+// MCP connection example
+try await MCPConnection().run()
+
+// Workflow example
+try await AgentWorkflow.manual.run()
+try await AgentWorkflow.automatic.run()
+
+// Tool calling example
+try await ToolCalling.run()
+
+// Gemini Image Generation
+try await GminiImageGeneration.run()
+
+// Gemini Speech Generation
+try await GminiSpeechGeneration.run()
+
+// Google search tool
+try await GoogleSearchTool.run()
+
+// Tool & MCP
+try await GoogleSearchTool.run()
+```
+
 ### Auto workflow
 
 ```swift
@@ -17,7 +44,23 @@ let autoWorkflow = AutoWorkflow(model: model, goal: "Write an article about hist
 try await autoWorkflow.run()
 ```
 
-Let AI model figure out what's the best to do. Only support sequence flow at the moment.
+Let AI model figure out what's the best to do. Only support sequence flow at the moment. It might ask clarification question depending on your goal. If you think you want it run without futher questions, just input `run without more questions` to kick off the workflow.
+
+#### What this can do depends on the tools/mcp servers we configure, for example:
+
+- with `GoogleSearch`, `Fetch`, `FileIO` tools, it can achive goals like: 
+
+```
+Write a summary of developments in computer science over the past 12 months, 
+using information from the top 10 websites in the search results and save it in a markdown file.
+```
+The result of my last run of this goal was [computer_science_developments.md](./Examples/computer_science_developments.md)
+
+- with `GitHub MCP Server`, we can ask it to perform all the tasks this mcp server provides like:
+```
+Get all the tags of https://github.com/ShenghaiWang/SwiftAIAgent.git
+```
+The result of my last run of this goal was `"The following tags were found for the repository: v0.0.4, v0.0.3, v0.0.2, v0.0.1")`
 
 ### Mannal workflow
 
