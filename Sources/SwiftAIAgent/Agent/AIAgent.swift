@@ -122,6 +122,7 @@ public final actor AIAgent: Sendable {
             await Runtime.shared.set(output: result, for: id, title: title)
             let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
             logger.debug("\n\(description)\n===Re-run agent after calling tools===\n\(result.allTexts)\n")
+            try await Task.sleep(for: .seconds(1))
             result += try await runInternal(prompt: combinedPrompt,
                                             outputSchema: outputSchema,
                                             modalities: modalities,
