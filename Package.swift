@@ -5,7 +5,7 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-    name: "SwiftAgent",
+    name: "SwiftAIAgent",
     platforms: [
         .macOS("13.0"),
         .macCatalyst("16.0"),

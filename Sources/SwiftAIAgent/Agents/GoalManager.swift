@@ -61,12 +61,14 @@ public actor GoalManager {
     /// - Returns: The solution output from the agent for the goal
     /// - Throws: `GoalManager.Error.needClarification(questions: [String])` in case of needing clarification for the goal.
     /// - Throws: `Swift.Error` in case of any network error or LLM error.
-    public func run() async throws -> [AIAgentOutput] {
-        logger.debug("\n===Checking Goal===\n")
-        let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
-        logger.debug("\n===Clarification Questions===\n\(clarification)\n")
-        if !clarification.questions.isEmpty {
-            throw Error.needClarification(questions: clarification.questions)
+    public func run(noFutherClarification: Bool = false) async throws -> [AIAgentOutput] {
+        if !noFutherClarification {
+            logger.debug("\n===Checking Goal===\n")
+            let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
+            logger.debug("\n===Clarification Questions===\n\(clarification)\n")
+            if !clarification.questions.isEmpty {
+                throw Error.needClarification(questions: clarification.questions)
+            }
         }
         logger.debug("\n===Starting Planning===\n")
         let task: AITask = try await runAICommand(planInstructions)
