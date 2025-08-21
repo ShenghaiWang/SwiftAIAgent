@@ -24,7 +24,8 @@ enum AgentWorkflow {
         init(model: AIAgentModel, goal: String) async throws {
             self.model = model
             self.managerAgent = try await AIAgent(title: "Manager", model: model)
-            let fileIO = FileIO(baseFolder: ".")
+            let baseFolder = "."
+            let fileIO = FileIO(baseFolder: baseFolder)
             let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
             let key = ProcessInfo.processInfo.environment["key"] ?? ""
             let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
@@ -34,7 +35,8 @@ enum AgentWorkflow {
                                            models: [model],
                                            tools: [fileIO,
                                                    GoogleSearch(cx: cx, key: key),
-                                                   Fetch()
+                                                   Fetch(),
+                                                   GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
                                                   ],
                                            mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
         }
@@ -104,7 +106,9 @@ enum AgentWorkflow {
         let autoWorkflow = try await AutoWorkflow(model: model,
                                                   goal:
             """
-            Get all the tags of https://github.com/ShenghaiWang/SwiftAIAgent.git
+            - Summarise AI history
+            - gemerate an image for the article
+            - save it in a markdow file 
             """
         )
         try await autoWorkflow.run()

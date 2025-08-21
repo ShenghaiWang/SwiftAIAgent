@@ -35,6 +35,7 @@ let package = Package(
               .target(name: "AITools",
                       dependencies: [
                         "AIAgentMacros",
+                        "GeminiSDK",
                         .product(name: "SwiftSoup", package: "SwiftSoup"),
                       ]),
               .target(name: "GeminiSDK",

@@ -21,6 +21,18 @@ extension Array where Element == GeminiOutput {
         compactMap { if case let .text(text) = $0 { text } else { nil } }
     }
 
+    public var firstImage: GeminiOutput? {
+        allTextOutputs.first
+    }
+
+    public var allImageOutputs: [GeminiOutput] {
+        filter { if case .image = $0 { true } else { false } }
+    }
+
+    public var allImages: [Data] {
+        compactMap { if case let .image(data) = $0 { data } else { nil } }
+    }
+
     public var allFunctionCallOutputs: [GeminiOutput] {
         filter { if case .functionCalls = $0 { true } else { false } }
     }
