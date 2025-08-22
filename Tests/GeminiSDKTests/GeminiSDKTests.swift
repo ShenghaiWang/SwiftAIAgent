@@ -1,7 +1,8 @@
-import Testing
-@testable import GeminiSDK
-import Foundation
 import AIAgentMacros
+import Foundation
+import Testing
+
+@testable import GeminiSDK
 
 /// The location parameter for getWeather function
 @AIModelSchema
@@ -13,14 +14,14 @@ struct Location {
 struct GeminiSDKTests {
     @Test
     func testAPICall() async throws {
-//        let sdk = GeminiSDK(model: "gemini-2.5-flash",
-//                            apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
-//        let response = try await sdk.textGeneration(
-//            prompt: "What's the weather like today in Sydney?",
-//            tools: [.init(functionDeclarations: [.init(name: "getWeather",
-//                                                       description: "Find the weather in the specified city",
-//                                                       parametersJsonSchema: Location.outputSchema)])])
-//        #expect(!response.isEmpty)
+        //        let sdk = GeminiSDK(model: "gemini-2.5-flash",
+        //                            apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
+        //        let response = try await sdk.textGeneration(
+        //            prompt: "What's the weather like today in Sydney?",
+        //            tools: [.init(functionDeclarations: [.init(name: "getWeather",
+        //                                                       description: "Find the weather in the specified city",
+        //                                                       parametersJsonSchema: Location.outputSchema)])])
+        //        #expect(!response.isEmpty)
     }
 
     @Test("Parse function call from response")
@@ -58,17 +59,25 @@ struct GeminiSDKTests {
             """
         let data = Data(response.utf8)
         let functionCalls = try data.functionCalls()
-        #expect(functionCalls == ["{\"name\":\"getWeather\",\"args\":{\"city\":\"Sydney\"}}",
-                                  "{\"name\":\"getWeather2\",\"args\":{\"city\":\"Melbourne\"}}"])
+        #expect(
+            functionCalls == [
+                "{\"name\":\"getWeather\",\"args\":{\"city\":\"Sydney\"}}",
+                "{\"name\":\"getWeather2\",\"args\":{\"city\":\"Melbourne\"}}",
+            ])
     }
 
     @Test("Requesting function calls")
     func requestingFunctionCalls() throws {
         let request = GeminiRequest(
             contents: [.init(parts: [.init(text: "")])],
-            tools: [.init(functionDeclarations: [.init(name: "getWeather",
-                                                       description: "Find the weather in the specified city",
-                                                       parametersJsonSchema: Location.outputSchema)])]
+            tools: [
+                .init(functionDeclarations: [
+                    .init(
+                        name: "getWeather",
+                        description: "Find the weather in the specified city",
+                        parametersJsonSchema: Location.outputSchema)
+                ])
+            ]
         )
         #expect(request.requestingFunctionCalls)
     }

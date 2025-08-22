@@ -2,16 +2,19 @@ import Foundation
 import SwiftSyntax
 
 extension FunctionDeclSyntax {
-    private func parseParameter(from line: String, prefixToRemove: String) -> (name: String, description: String)? {
+    private func parseParameter(from line: String, prefixToRemove: String) -> (
+        name: String, description: String
+    )? {
         let paramLine = line.dropFirst(prefixToRemove.count).trimmingCharacters(in: .whitespaces)
         if let colonIndex = paramLine.firstIndex(of: ":") {
             let name = paramLine[..<colonIndex].trimmingCharacters(in: .whitespaces)
-            let desc = paramLine[paramLine.index(after: colonIndex)...].trimmingCharacters(in: .whitespaces)
+            let desc = paramLine[paramLine.index(after: colonIndex)...].trimmingCharacters(
+                in: .whitespaces)
             return (name: String(name), description: desc)
         }
         return nil
     }
-    
+
     var parsedDoc: (description: String?, parameters: [String: String], returns: String?) {
         var description: String?
         var parameters: [String: String] = [:]
@@ -21,7 +24,9 @@ extension FunctionDeclSyntax {
         for line in leadingTrivia.docLineComments {
             if line.hasPrefix("- Parameter") && !line.hasPrefix("- Parameters:") {
                 inParametersSection = false
-                if let (name, description) = parseParameter(from: line, prefixToRemove: "- Parameter") {
+                if let (name, description) = parseParameter(
+                    from: line, prefixToRemove: "- Parameter")
+                {
                     parameters[name] = description
                 }
             } else if line.hasPrefix("- Parameters:") {
@@ -47,20 +52,21 @@ extension FunctionDeclSyntax {
             .compactMap {
                 $0.parameterSchema(description: parsedDoc.parameters[$0.firstName.text] ?? "")
             }
-        let requiredParameters = parameters.filter(\.required).map({ "\"\($0.name)\"" }).joined(separator: ",")
+        let requiredParameters = parameters.filter(\.required).map({ "\"\($0.name)\"" }).joined(
+            separator: ",")
         return (
             name: name.text,
             description: parsedDoc.description ?? "",
             parametersJsonSchema:
                 """
-                {
-                    "type": "object",
-                    "required": [\(requiredParameters)],
-                    "properties": {
-                        \(parameters.compactMap(\.schema).joined(separator: ","))
-                    }
+            {
+                "type": "object",
+                "required": [\(requiredParameters)],
+                "properties": {
+                    \(parameters.compactMap(\.schema).joined(separator: ","))
                 }
-                """
+            }
+            """
         )
     }
 

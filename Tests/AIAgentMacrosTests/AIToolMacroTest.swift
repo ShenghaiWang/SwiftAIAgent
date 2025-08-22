@@ -1,70 +1,71 @@
+import SwiftParser
 import SwiftSyntax
 import SwiftSyntaxMacroExpansion
 import Testing
+
 @testable import AIAgentMacroDefinitions
-import SwiftParser
 
 struct AIToolMacroTests {
     @Test("Tool Macro Test")
     func toolMacroTest() {
         let source: SourceFileSyntax =
-                        """
-                        @AITool
-                        struct ToolStruct {
-                            /// Get weather of the city
-                            /// - Parameters:
-                            ///  - city: The city
-                            /// - Returns: Weather of the city
-                            func getWeather(city: String) throws -> Weather {
-                            }
-                        }
-                        """
+            """
+            @AITool
+            struct ToolStruct {
+                /// Get weather of the city
+                /// - Parameters:
+                ///  - city: The city
+                /// - Returns: Weather of the city
+                func getWeather(city: String) throws -> Weather {
+                }
+            }
+            """
         let transformedSF = source.expand(macros: ["AITool": AIToolMacro.self]) { _ in
             BasicMacroExpansionContext(sourceFiles: [source: file])
         }
         let expectedDescription =
-                        #"""
-                        
-                        struct ToolStruct {
-                            /// Get weather of the city
-                            /// - Parameters:
-                            ///  - city: The city
-                            /// - Returns: Weather of the city
-                            func getWeather(city: String) throws -> Weather {
-                            }
+            #"""
+
+            struct ToolStruct {
+                /// Get weather of the city
+                /// - Parameters:
+                ///  - city: The city
+                /// - Returns: Weather of the city
+                func getWeather(city: String) throws -> Weather {
+                }
+            }
+
+            extension ToolStruct: AITool {
+                public static var toolSchemas: [String] {
+                    [
+                        """
+                        {"name":"getWeather","description":"Get weather of the city","parametersJsonSchema":{"type":"object","required":["city"],"properties":{"city":{"type":"string","description":"The city"}}}}
+                        """
+                    ]
+                }
+
+                public var methodMap: [String: Any] {
+                    [
+                        "getWeather": self.getWeather as (String) throws -> Weather
+                    ]
+                }
+
+                public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? {
+                    switch methodName {
+                    case "getWeather":
+                        guard let fn = methodMap[methodName] as? (String) throws -> Weather else {
+                            return nil
                         }
-
-                        extension ToolStruct: AITool {
-                            public static var toolSchemas: [String] {
-                                [
-                                    """
-                                    {"name":"getWeather","description":"Get weather of the city","parametersJsonSchema":{"type":"object","required":["city"],"properties":{"city":{"type":"string","description":"The city"}}}}
-                                    """
-                                ]
-                            }
-
-                            public var methodMap: [String: Any] {
-                                [
-                                    "getWeather": self.getWeather as (String) throws -> Weather
-                                ]
-                            }
-
-                            public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? {
-                                switch methodName {
-                                case "getWeather":
-                                    guard let fn = methodMap[methodName] as? (String) throws -> Weather else {
-                                        return nil
-                                    }
-                                    guard let data = args["city"], let city = try? JSONDecoder().decode(String.self, from: data) else {
-                                        return nil
-                                    }
-                                    return try fn(city)
-                                default:
-                                    return nil
-                                }
-                            }
+                        guard let data = args["city"], let city = try? JSONDecoder().decode(String.self, from: data) else {
+                            return nil
                         }
-                        """#
+                        return try fn(city)
+                    default:
+                        return nil
+                    }
+                }
+            }
+            """#
         #expect(transformedSF.description == expectedDescription)
     }
 
@@ -127,10 +128,10 @@ struct AIToolMacroTests {
         let toolSchema = funcDecl.toolSchema
         #expect(toolSchema?.name == "getWeather")
         #expect(toolSchema?.description == "Get weather of the city")
-        #expect(toolSchema?.parametersJsonSchema.compactJson ==
-            """
-            {"type":"object","required":["city","date"],"properties":{"city":{"type":"array","description":"The city","items":{"type":"string"}},"date":{"type":"string","description":"The date"}}}
-            """)
+        #expect(
+            toolSchema?.parametersJsonSchema.compactJson == """
+                {"type":"object","required":["city","date"],"properties":{"city":{"type":"array","description":"The city","items":{"type":"string"}},"date":{"type":"string","description":"The date"}}}
+                """)
     }
 
     @Test("Test parsing func parameters with Customised type")
@@ -150,9 +151,9 @@ struct AIToolMacroTests {
         let toolSchema = funcDecl.toolSchema
         #expect(toolSchema?.name == "getWeather")
         #expect(toolSchema?.description == "Get weather of the date")
-        #expect(toolSchema?.parametersJsonSchema.compactJson ==
-            #"""
-            {"type":"object","required":["date"],"properties":{"date":\(WeatherDate.outputSchema)}}
-            """#)
+        #expect(
+            toolSchema?.parametersJsonSchema.compactJson == #"""
+                {"type":"object","required":["date"],"properties":{"date":\(WeatherDate.outputSchema)}}
+                """#)
     }
 }

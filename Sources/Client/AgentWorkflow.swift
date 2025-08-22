@@ -1,7 +1,7 @@
+import AITools
 import Foundation
 import GeminiSDK
 import SwiftAIAgent
-import AITools
 
 enum AgentWorkflow {
     case manual
@@ -30,15 +30,17 @@ enum AgentWorkflow {
             let key = ProcessInfo.processInfo.environment["key"] ?? ""
             let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
             let gitHubToken = ProcessInfo.processInfo.environment["GitHubToken"] ?? ""
-            self.goalManager = GoalManager(goal: goal,
-                                           managerAgent: managerAgent,
-                                           models: [model],
-                                           tools: [fileIO,
-                                                   GoogleSearch(cx: cx, key: key),
-                                                   Fetch(),
-                                                   GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
-                                                  ],
-                                           mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
+            self.goalManager = GoalManager(
+                goal: goal,
+                managerAgent: managerAgent,
+                models: [model],
+                tools: [
+                    fileIO,
+                    GoogleSearch(cx: cx, key: key),
+                    Fetch(),
+                    GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
+                ],
+                mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
         }
 
         func run() async throws {
@@ -47,10 +49,11 @@ enum AgentWorkflow {
                 print(result)
             } catch {
                 if case let GoalManager.Error.needClarification(questions) = error {
-                    print(questions
-                        .enumerated()
-                        .map { "\($0 + 1): \($1)" }
-                        .joined(separator: "\n"))
+                    print(
+                        questions
+                            .enumerated()
+                            .map { "\($0 + 1): \($1)" }
+                            .joined(separator: "\n"))
                     let clarifications = readLine()
                     await goalManager.set(clarifications: [clarifications ?? ""])
                     try await run()
@@ -62,34 +65,39 @@ enum AgentWorkflow {
     }
 
     private func runManualFlow() async throws {
-        let gemini = GeminiSDK(model: geminiModel,
-                               apiKey: geminiAPIKey)
+        let gemini = GeminiSDK(
+            model: geminiModel,
+            apiKey: geminiAPIKey)
 
-        let context = AIAgentContext("""
-                                 The task is to write an essay about the history of AI.
-                                 A few agents work on this task.
-                                 """)
+        let context = AIAgentContext(
+            """
+            The task is to write an essay about the history of AI.
+            A few agents work on this task.
+            """)
 
-        let draftAgent = try await AIAgent(title: "Draft article",
-                                           model: gemini,
-                                           context: context,
-                                           instruction: """
-                                 You are an expert in writing articles based on your knowledge.
-                                 """)
-        let reviewAgent = try await AIAgent(title: "Review",
-                                            model: gemini,
-                                            context: context,
-                                            instruction: """
-                                You are an expert in reviewing articles. Please review and improve the article you are given.
-                                """)
-        let finaliserAgent = try await AIAgent(title: "Finaliser",
-                                               model: gemini,
-                                               tools: [FileIO(baseFolder: ".")],
-                                               context: context,
-                                               instruction: """
-                                You are an expert in finialising articles. Please finalise the article based on the draft and review. 
-                                Save it in article.md file eventually."
-                                """)
+        let draftAgent = try await AIAgent(
+            title: "Draft article",
+            model: gemini,
+            context: context,
+            instruction: """
+                You are an expert in writing articles based on your knowledge.
+                """)
+        let reviewAgent = try await AIAgent(
+            title: "Review",
+            model: gemini,
+            context: context,
+            instruction: """
+                You are an expert in reviewing articles. Please review and improve the article you are given.
+                """)
+        let finaliserAgent = try await AIAgent(
+            title: "Finaliser",
+            model: gemini,
+            tools: [FileIO(baseFolder: ".")],
+            context: context,
+            instruction: """
+                You are an expert in finialising articles. Please finalise the article based on the draft and review. 
+                Save it in article.md file eventually."
+                """)
 
         await finaliserAgent.add(input: draftAgent.id)
         let draftStep = Workflow.Step.single(draftAgent)
@@ -103,13 +111,14 @@ enum AgentWorkflow {
 
     private func runAutomaticFlow() async throws {
         let model = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
-        let autoWorkflow = try await AutoWorkflow(model: model,
-                                                  goal:
-            """
-            - Summarise AI history
-            - gemerate an image for the article
-            - save it in a markdow file 
-            """
+        let autoWorkflow = try await AutoWorkflow(
+            model: model,
+            goal:
+                """
+                - Summarise AI history
+                - gemerate an image for the article
+                - save it in a markdow file 
+                """
         )
         try await autoWorkflow.run()
     }

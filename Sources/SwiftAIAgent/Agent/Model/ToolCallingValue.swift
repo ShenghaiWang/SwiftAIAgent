@@ -9,9 +9,10 @@ extension ToolCallingValue {
     /// init from json string in format {"name":"getWeather","args":{"city":"Sydney", "date": { "month":"Jan", "day": "1" }}}
     init?(value: String) {
         guard let data = value.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let name = json["name"] as? String,
-              let argsDict = json["args"] as? [String: Any] else {
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let name = json["name"] as? String,
+            let argsDict = json["args"] as? [String: Any]
+        else {
             return nil
         }
         var args: [String: Data] = [:]
@@ -40,10 +41,11 @@ extension ToolCallingValue {
 extension ToolCallingValue {
     var argsString: String {
         let keyValus = args.reduce(into: "") { partialResult, value in
-            partialResult.append(contentsOf:
-                """
-                "\(value.key)":\(String(data: value.value, encoding: .utf8) ?? "")
-                """
+            partialResult.append(
+                contentsOf:
+                    """
+                    "\(value.key)":\(String(data: value.value, encoding: .utf8) ?? "")
+                    """
             )
         }
         return "{\(keyValus)}"

@@ -5,4 +5,3 @@ public struct SafetyRating: Decodable {
     let probability: HarmProbability
     let blocked: Bool
 }
-

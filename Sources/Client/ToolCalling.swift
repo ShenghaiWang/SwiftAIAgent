@@ -1,5 +1,5 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 import GeminiSDK
 import SwiftAIAgent
 
@@ -16,14 +16,16 @@ enum ToolCalling {
     }
 
     static func run() async throws {
-        let gemini = GeminiSDK(model: geminiModel,
-                               apiKey: geminiAPIKey)
+        let gemini = GeminiSDK(
+            model: geminiModel,
+            apiKey: geminiAPIKey)
         let context = AIAgentContext("Get weather")
-        let agent = try await AIAgent(title: "Weahter Agent",
-                                      model: gemini,
-                                      tools: [ToolStruct()],
-                                      context: context,
-                                      instruction: "")
+        let agent = try await AIAgent(
+            title: "Weahter Agent",
+            model: gemini,
+            tools: [ToolStruct()],
+            context: context,
+            instruction: "")
         let result = try await agent.run(prompt: "Get weather for Sydney")
         print(result)
     }

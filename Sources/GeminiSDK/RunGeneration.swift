@@ -1,7 +1,8 @@
-import Foundation
 import AIAgentMacros
+import Foundation
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+    import FoundationNetworking
 #endif
 
 extension GeminiSDK {
@@ -16,8 +17,10 @@ extension GeminiSDK {
         urlRequest.httpBody = try JSONEncoder().encode(request)
         let (data, httpURLResponse) = try await urlSession.data(for: urlRequest)
         guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode,
-                200..<300 ~= statusCode else {
-            throw Error.invalidResponse(responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
+            200..<300 ~= statusCode
+        else {
+            throw Error.invalidResponse(
+                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
         }
         let functioncalls = try data.functionCalls()
         output.append(.functionCalls(functioncalls))
@@ -27,7 +30,9 @@ extension GeminiSDK {
         if let text = response.text, !text.isEmpty {
             output.append(.text(text))
         }
-        if let base64String = response.inlineData?.data, let data = Data(base64Encoded: base64String) {
+        if let base64String = response.inlineData?.data,
+            let data = Data(base64Encoded: base64String)
+        {
             if request.generationConfig?.responseModalities?.contains(.audio) ?? false {
                 output.append(.audio(data))
             } else {

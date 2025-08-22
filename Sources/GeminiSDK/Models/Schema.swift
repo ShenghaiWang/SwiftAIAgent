@@ -34,28 +34,29 @@ public struct Schema: Codable {
     let minimum: Int?
     let maximum: Int?
 
-    public init(type: Type,
-         format: String? = nil,
-         title: String? = nil,
-         description: String? = nil,
-         nullable: Bool? = nil,
-         `enum`: [String]? = nil,
-         maxItems: Int? = nil,
-         minItems: Int? = nil,
-         properties: [String : Schema]? = nil,
-         required: [String]? = nil,
-         miniProperties: Int? = nil,
-         maxProperties: Int? = nil,
-         minLength: Int? = nil,
-         maxLength: Int? = nil,
-         pattern: String? = nil,
-         example: String? = nil,
-         anyOf: [Schema]? = nil,
-         propertyOrdering: [String]? = nil,
-         `default`: String? = nil,
-         items: [Schema]? = nil,
-         minimum: Int? = nil,
-         maximum: Int? = nil
+    public init(
+        type: Type,
+        format: String? = nil,
+        title: String? = nil,
+        description: String? = nil,
+        nullable: Bool? = nil,
+        `enum`: [String]? = nil,
+        maxItems: Int? = nil,
+        minItems: Int? = nil,
+        properties: [String: Schema]? = nil,
+        required: [String]? = nil,
+        miniProperties: Int? = nil,
+        maxProperties: Int? = nil,
+        minLength: Int? = nil,
+        maxLength: Int? = nil,
+        pattern: String? = nil,
+        example: String? = nil,
+        anyOf: [Schema]? = nil,
+        propertyOrdering: [String]? = nil,
+        `default`: String? = nil,
+        items: [Schema]? = nil,
+        minimum: Int? = nil,
+        maximum: Int? = nil
     ) {
         self.type = type
         self.format = format

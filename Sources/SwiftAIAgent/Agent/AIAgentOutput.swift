@@ -1,5 +1,5 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 
 /// A wrapper type for all types of output from LLM
 public enum AIAgentOutput: Sendable {
@@ -21,7 +21,6 @@ extension AIAgentOutput {
         }
     }
 }
-
 
 extension Array where Element == AIAgentOutput {
     public var firstText: AIAgentOutput? {

@@ -1,5 +1,5 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 
 /// Clarification questions to a task
 @AIModelSchema

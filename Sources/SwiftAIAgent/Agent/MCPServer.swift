@@ -1,5 +1,6 @@
 import Foundation
 import MCP
+
 #if canImport(System)
     import System
 #else
@@ -16,7 +17,7 @@ extension MCPServer {
         switch self {
         case let .stdio(command, args):
             let process = Process()
-            process.executableURL = URL(fileURLWithPath: "uvx") // Make sure uvx is available
+            process.executableURL = URL(fileURLWithPath: "uvx")  // Make sure uvx is available
             process.arguments = ["mcpxcodebuild"]
 
             let inputPipe = Pipe()
@@ -33,12 +34,13 @@ extension MCPServer {
         case let .http(url, token):
             return HTTPClientTransport(
                 endpoint: url,
-                streaming: true) { urlRequest in
-                    guard let token else { return urlRequest }
-                    var newUrlRequest = urlRequest
-                    newUrlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                    return newUrlRequest
-                }
+                streaming: true
+            ) { urlRequest in
+                guard let token else { return urlRequest }
+                var newUrlRequest = urlRequest
+                newUrlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                return newUrlRequest
+            }
         }
     }
 
@@ -65,7 +67,7 @@ extension MCP.Value {
     var jsonSchema: String {
         switch self {
         case let .string(value): "\"" + value + "\""
-        case let .array(values): "[" + values.map( \.jsonSchema ).joined(separator: ",") + "]"
+        case let .array(values): "[" + values.map(\.jsonSchema).joined(separator: ",") + "]"
         case let .object(dict):
             #"""
             {
@@ -79,7 +81,7 @@ extension MCP.Value {
         case let .double(value): String(value)
         case let .int(value): String(value)
         case .null: "null"
-        default :
+        default:
             ""
         }
     }
@@ -89,9 +91,12 @@ extension Tool.Content {
     var aiAgentOutput: AIAgentOutput {
         switch self {
         case let .text(text): AIAgentOutput.text(text)
-        case let .audio(data: data, mimeType: mimeType): AIAgentOutput.audio(Data(base64Encoded: data) ?? Data())
-        case let .image(data: data, mimeType: mimeType, metadata: metadata): AIAgentOutput.image(Data(base64Encoded: data) ?? Data())
-        case let .resource(uri: uri, mimeType: mimeType, text: text): .text("uri: \(uri)\n mimetype: \(mimeType)\n text: \(text ?? "")")
+        case let .audio(data: data, mimeType: mimeType):
+            AIAgentOutput.audio(Data(base64Encoded: data) ?? Data())
+        case let .image(data: data, mimeType: mimeType, metadata: metadata):
+            AIAgentOutput.image(Data(base64Encoded: data) ?? Data())
+        case let .resource(uri: uri, mimeType: mimeType, text: text):
+            .text("uri: \(uri)\n mimetype: \(mimeType)\n text: \(text ?? "")")
         }
     }
 }

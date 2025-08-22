@@ -27,9 +27,11 @@ public struct GeminiRequest: Codable {
             let multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig?
             let languageCode: String?
 
-            public init(voiceConfig: VoiceConfig? = nil,
-                        multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig? = nil,
-                        languageCode: String? = nil) {
+            public init(
+                voiceConfig: VoiceConfig? = nil,
+                multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig? = nil,
+                languageCode: String? = nil
+            ) {
                 self.voiceConfig = voiceConfig
                 self.multiSpeakerVoiceConfig = multiSpeakerVoiceConfig
                 self.languageCode = languageCode
@@ -72,25 +74,27 @@ public struct GeminiRequest: Codable {
             case high = "MEDIA_RESOLUTION_HIGH"
         }
 
-        public init(stopSequences: [String]? = nil,
-             responseMimeType: String? = nil,
-             responseSchema: Schema? = nil,
-             responseJsonSchema: String? = nil,
-             responseModalities: [GeminiModality]? = nil,
-             candidateCount: Int? = nil,
-             maxOutputTokens: Int? = nil,
-             temperature: Double? = nil,
-             topP: Double? = nil,
-             topK: Int? = nil,
-             seed: Int? = nil,
-             presencePenalty: Double? = nil,
-             frequencyPenalty: Double? = nil,
-             responseLogprobs: Bool? = nil,
-             logprobs: Int? = nil,
-             enableEnhancedCivicAnswers: Bool? = nil,
-             speechConfig: SpeechConfig? = nil,
-             thinkingConfig: ThinkingConfig? = nil,
-             mediaResolution: MediaResolution? = nil) {
+        public init(
+            stopSequences: [String]? = nil,
+            responseMimeType: String? = nil,
+            responseSchema: Schema? = nil,
+            responseJsonSchema: String? = nil,
+            responseModalities: [GeminiModality]? = nil,
+            candidateCount: Int? = nil,
+            maxOutputTokens: Int? = nil,
+            temperature: Double? = nil,
+            topP: Double? = nil,
+            topK: Int? = nil,
+            seed: Int? = nil,
+            presencePenalty: Double? = nil,
+            frequencyPenalty: Double? = nil,
+            responseLogprobs: Bool? = nil,
+            logprobs: Int? = nil,
+            enableEnhancedCivicAnswers: Bool? = nil,
+            speechConfig: SpeechConfig? = nil,
+            thinkingConfig: ThinkingConfig? = nil,
+            mediaResolution: MediaResolution? = nil
+        ) {
             self.stopSequences = stopSequences
             self.responseMimeType = responseMimeType
             self.responseSchema = responseSchema
@@ -128,12 +132,14 @@ public struct GeminiRequest: Codable {
             let response: Schema?
             let responseJsonSchema: String?
 
-            public init(name: String,
-                        description: String,
-                        parametersJsonSchema: String?,
-                        responseJsonSchema: String? = nil,
-                        parameters: Schema? = nil,
-                        response: Schema? = nil) {
+            public init(
+                name: String,
+                description: String,
+                parametersJsonSchema: String?,
+                responseJsonSchema: String? = nil,
+                parameters: Schema? = nil,
+                response: Schema? = nil
+            ) {
                 self.name = name
                 self.description = description
                 self.behavior = .unspecified
@@ -172,11 +178,13 @@ public struct GeminiRequest: Codable {
         let codeExecution: CodeExecution?
         let googleSearch: GoogleSearch?
         let urlContext: UrlContext?
-        public init(functionDeclarations: [FunctionDeclaration]? = nil,
-                    googleSearchRetrieval: GoogleSearchRetrieval? = nil,
-                    codeExecution: CodeExecution? = nil,
-                    googleSearch: GoogleSearch? = nil,
-                    urlContext: UrlContext? = nil) {
+        public init(
+            functionDeclarations: [FunctionDeclaration]? = nil,
+            googleSearchRetrieval: GoogleSearchRetrieval? = nil,
+            codeExecution: CodeExecution? = nil,
+            googleSearch: GoogleSearch? = nil,
+            urlContext: UrlContext? = nil
+        ) {
             self.functionDeclarations = functionDeclarations
             self.googleSearchRetrieval = googleSearchRetrieval
             self.codeExecution = codeExecution
@@ -212,13 +220,15 @@ public struct GeminiRequest: Codable {
     let toolConfig: ToolConfig?
     let safetySettings: [SafetySetting]?
 
-    public init(contents: [Content],
-                systemInstruction: Content? = nil,
-                generationConfig: GenerationConfig? = nil,
-                cachedContent: String? = nil,
-                tools: [Tool]? = nil,
-                toolConfig: ToolConfig? = nil,
-                safetySettings: [SafetySetting]? = nil) {
+    public init(
+        contents: [Content],
+        systemInstruction: Content? = nil,
+        generationConfig: GenerationConfig? = nil,
+        cachedContent: String? = nil,
+        tools: [Tool]? = nil,
+        toolConfig: ToolConfig? = nil,
+        safetySettings: [SafetySetting]? = nil
+    ) {
         self.contents = contents
         self.systemInstruction = systemInstruction
         self.generationConfig = generationConfig
@@ -250,7 +260,8 @@ extension GeminiRequest.GenerationConfig: Encodable {
         try container.encodeIfPresent(frequencyPenalty, forKey: .frequencyPenalty)
         try container.encodeIfPresent(responseLogprobs, forKey: .responseLogprobs)
         try container.encodeIfPresent(logprobs, forKey: .logprobs)
-        try container.encodeIfPresent(enableEnhancedCivicAnswers, forKey: .enableEnhancedCivicAnswers)
+        try container.encodeIfPresent(
+            enableEnhancedCivicAnswers, forKey: .enableEnhancedCivicAnswers)
         try container.encodeIfPresent(speechConfig, forKey: .speechConfig)
         try container.encodeIfPresent(thinkingConfig, forKey: .thinkingConfig)
         try container.encodeIfPresent(mediaResolution, forKey: .mediaResolution)

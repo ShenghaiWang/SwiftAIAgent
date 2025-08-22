@@ -5,7 +5,8 @@ enum GminiImageGeneration {
     static func run() async throws {
         let gemini = GeminiSDK(model: geminiImageModel, apiKey: geminiAPIKey)
         let result = try await gemini.run(
-            prompt: "Hi, can you create a 3d rendered image of a pig with wings and a top hat flying over a happy futuristic scifi city with lots of greenery?",
+            prompt:
+                "Hi, can you create a 3d rendered image of a pig with wings and a top hat flying over a happy futuristic scifi city with lots of greenery?",
             modalities: [.image, .text])
         try result.forEach { output in
             if case let .image(data) = output {

@@ -8,7 +8,8 @@ struct JSONAny: Encodable {
         var container = encoder.singleValueContainer()
         switch value {
         case let v as [String: Any]:
-            try container.encode(Dictionary(uniqueKeysWithValues: v.map { ($0, JSONAny(value: $1)) }))
+            try container.encode(
+                Dictionary(uniqueKeysWithValues: v.map { ($0, JSONAny(value: $1)) }))
         case let v as [Any]:
             try container.encode(v.map { JSONAny(value: $0) })
         case let v as String:
@@ -32,4 +33,3 @@ struct JSONAny: Encodable {
         }
     }
 }
-

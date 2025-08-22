@@ -12,7 +12,6 @@ let geminiModel = "gemini-2.5-flash"
 let geminiImageModel = "gemini-2.0-flash-preview-image-generation"
 let geminiTTSModel = "gemini-2.5-flash-preview-tts"
 
-
 // MCP connection example
 //try await MCPConnection().run()
 

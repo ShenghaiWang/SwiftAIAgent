@@ -1,5 +1,5 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 
 /// Task that is broken down from a goal
 @AIModelSchema
@@ -45,11 +45,10 @@ extension AITask: CustomStringConvertible {
         ===Task name: \(name)===
         Details: \(details)
         Sub Tasks:\n\(subTasks?.compactMap(\.description).joined() ?? "\n")
-        
+
         """
     }
 }
-
 
 extension AISubTask: CustomStringConvertible {
     public var description: String {
@@ -57,7 +56,7 @@ extension AISubTask: CustomStringConvertible {
         ===Task name: \(name)===
         Details: \(details)
         Tools: \(tools?.joined(separator: ",") ?? "")
-        
+
         """
     }
 }

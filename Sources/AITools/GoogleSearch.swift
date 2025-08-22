@@ -1,7 +1,8 @@
-import Foundation
 import AIAgentMacros
+import Foundation
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+    import FoundationNetworking
 #endif
 
 /// Google search engine
@@ -75,32 +76,34 @@ public struct GoogleSearch {
         /// The index of the first result to return. The default number of results per page is 10, so &start=11 would start at the top of the second page of results. Note: The JSON API will never return more than 100 results, even if more than 100 documents match the query, so setting the sum of start + num to a number greater than 100 will produce an error. Also note that the maximum value for num is 10.
         let start: Int?
 
-        public init(q: String,
-                    c2coff: String? = nil,
-                    cr: String? = nil,
-                    dateRestrict: String? = nil,
-                    exactTerms: String? = nil,
-                    excludeTerms: String? = nil,
-                    fileType: String? = nil,
-                    filter: String? = nil,
-                    gl: String? = nil,
-                    highRange: String? = nil,
-                    hq: String? = nil,
-                    imgColorType: String? = nil,
-                    imgDominantColor: String? = nil,
-                    imgSize: String? = nil,
-                    imgType: String? = nil,
-                    linkSite: String? = nil,
-                    lr: String? = nil,
-                    num: Int? = nil,
-                    orTerms: String? = nil,
-                    rights: String? = nil,
-                    safe: String? = nil,
-                    searchType: String? = nil,
-                    siteSearch: String? = nil,
-                    siteSearchFilter: String? = nil,
-                    sort: String? = nil,
-                    start: Int? = nil) {
+        public init(
+            q: String,
+            c2coff: String? = nil,
+            cr: String? = nil,
+            dateRestrict: String? = nil,
+            exactTerms: String? = nil,
+            excludeTerms: String? = nil,
+            fileType: String? = nil,
+            filter: String? = nil,
+            gl: String? = nil,
+            highRange: String? = nil,
+            hq: String? = nil,
+            imgColorType: String? = nil,
+            imgDominantColor: String? = nil,
+            imgSize: String? = nil,
+            imgType: String? = nil,
+            linkSite: String? = nil,
+            lr: String? = nil,
+            num: Int? = nil,
+            orTerms: String? = nil,
+            rights: String? = nil,
+            safe: String? = nil,
+            searchType: String? = nil,
+            siteSearch: String? = nil,
+            siteSearchFilter: String? = nil,
+            sort: String? = nil,
+            start: Int? = nil
+        ) {
             self.q = q
             self.c2coff = c2coff
             self.cr = cr
@@ -136,16 +139,16 @@ public struct GoogleSearch {
         public struct Queries: Decodable {
             @AIModelSchema
             public struct QueryRequest: Decodable {
-                    let title: String
-                    let totalResults: String
-                    let searchTerms: String
-                    let count: Int
-                    let startIndex: Int
-                    let inputEncoding: String
-                    let outputEncoding: String
-                    let safe: String
-                    let cx: String
-                }
+                let title: String
+                let totalResults: String
+                let searchTerms: String
+                let count: Int
+                let startIndex: Int
+                let inputEncoding: String
+                let outputEncoding: String
+                let safe: String
+                let cx: String
+            }
             let request: [QueryRequest]
             let nextPage: [QueryRequest]?
         }
@@ -193,8 +196,10 @@ public struct GoogleSearch {
         }
         let (data, httpURLResponse) = try await URLSession.shared.data(from: url)
         guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode,
-                200..<300 ~= statusCode else {
-            throw Error.invalidResponse(responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
+            200..<300 ~= statusCode
+        else {
+            throw Error.invalidResponse(
+                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
         }
         return try JSONDecoder().decode(Response.self, from: data)
     }
@@ -205,8 +210,9 @@ extension GoogleSearch.Request {
         let mirror = Mirror(reflecting: value)
         for child in mirror.children {
             if let label = child.label,
-               let childValue = child.value as? V,
-               childValue == value[keyPath: keyPath] {
+                let childValue = child.value as? V,
+                childValue == value[keyPath: keyPath]
+            {
                 return label
             }
         }
@@ -217,47 +223,48 @@ extension GoogleSearch.Request {
         [
             \.q.optional,
             \GoogleSearch.Request.c2coff,
-             \.cr,
-             \.dateRestrict,
-             \.exactTerms,
-             \.excludeTerms,
-             \.fileType,
-             \.filter,
-             \.gl,
-             \.highRange,
-             \.hq,
-             \.imgColorType,
-             \.imgDominantColor,
-             \.imgSize,
-             \.imgType,
-             \.linkSite,
-             \.lr,
-             \.orTerms,
-             \.rights,
-             \.safe,
-             \.searchType,
-             \.siteSearch,
-             \.siteSearchFilter,
-             \.sort,
-             \.num?.string,
-             \.start?.string,
+            \.cr,
+            \.dateRestrict,
+            \.exactTerms,
+            \.excludeTerms,
+            \.fileType,
+            \.filter,
+            \.gl,
+            \.highRange,
+            \.hq,
+            \.imgColorType,
+            \.imgDominantColor,
+            \.imgSize,
+            \.imgType,
+            \.linkSite,
+            \.lr,
+            \.orTerms,
+            \.rights,
+            \.safe,
+            \.searchType,
+            \.siteSearch,
+            \.siteSearchFilter,
+            \.sort,
+            \.num?.string,
+            \.start?.string,
         ].reduce(into: [String]()) { result, keyPath in
             if let propertyName = propertyName(of: self, keyPath: keyPath),
-               let value = self[keyPath: keyPath] {
+                let value = self[keyPath: keyPath]
+            {
                 result.append("\(propertyName)=\(value)")
             }
         }.joined(separator: "&")
     }
 }
 
-private extension Int {
-    var string: String {
+extension Int {
+    fileprivate var string: String {
         "\(self)"
     }
 }
 
-private extension String {
-    var optional: String? {
+extension String {
+    fileprivate var optional: String? {
         Optional(self)
     }
 }

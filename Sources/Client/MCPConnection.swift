@@ -1,7 +1,7 @@
 import Foundation
+import GeminiSDK
 import MCP
 import SwiftAIAgent
-import GeminiSDK
 
 #if canImport(System)
     import System
@@ -15,17 +15,19 @@ struct MCPConnection {
     }
 
     func run() async throws {
-        let gemini = GeminiSDK(model: geminiModel,
-                               apiKey: geminiAPIKey)
+        let gemini = GeminiSDK(
+            model: geminiModel,
+            apiKey: geminiAPIKey)
         let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
-        let testAgent = try await AIAgent(title: "Draft article",
-                                           model: gemini,
-                                           mcpServers: [.http(url: gitHubURL, token: gitHubToken)],
-                                           context: nil,
-                                           instruction:
-                         """
-                         get all the tags of this repo https://github.com/ShenghaiWang/SwiftLlama
-                         """
+        let testAgent = try await AIAgent(
+            title: "Draft article",
+            model: gemini,
+            mcpServers: [.http(url: gitHubURL, token: gitHubToken)],
+            context: nil,
+            instruction:
+                """
+                get all the tags of this repo https://github.com/ShenghaiWang/SwiftLlama
+                """
         )
         let step = Workflow.Step.single(testAgent)
         let workflow = Workflow(step: step)

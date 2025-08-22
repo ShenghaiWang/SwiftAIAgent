@@ -1,8 +1,9 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 import SwiftSoup
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+    import FoundationNetworking
 #endif
 
 /// A tool that fetches the content of the url
@@ -12,7 +13,7 @@ public struct Fetch {
         case invalidURL
         case invalidResponse(responseStatusCode: Int)
     }
-    public init(){}
+    public init() {}
 
     /// Fetch the text content of the url
     /// - Parameter url: the url to be fetched
@@ -22,8 +23,11 @@ public struct Fetch {
             throw Error.invalidURL
         }
         let (data, httpURLResponse) = try await URLSession.shared.data(from: url)
-        guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode, 200..<300 ~= statusCode else {
-            throw Error.invalidResponse(responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode ?? 0)
+        guard let statusCode = (httpURLResponse as? HTTPURLResponse)?.statusCode,
+            200..<300 ~= statusCode
+        else {
+            throw Error.invalidResponse(
+                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode ?? 0)
         }
         guard let html = String(data: data, encoding: .utf8) else { return nil }
         do {

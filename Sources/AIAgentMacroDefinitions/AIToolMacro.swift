@@ -1,29 +1,34 @@
 import SwiftCompilerPlugin
+import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxMacros
-import SwiftDiagnostics
 
 enum AIToolMacroDiagnostic: String, DiagnosticMessage {
     case requiresStructOrEnum = "@AIToolMacro can only be applied to a struct, class, actor or enum"
 
     var message: String { rawValue }
-    var diagnosticID: MessageID { MessageID(domain: "SwiftAIAgentMacros", id: "AIToolMacro.\(self)") }
+    var diagnosticID: MessageID {
+        MessageID(domain: "SwiftAIAgentMacros", id: "AIToolMacro.\(self)")
+    }
     var severity: DiagnosticSeverity { .error }
 }
 
 public struct AIToolMacro: ExtensionMacro {
     public static func expansion(
-      of node: AttributeSyntax,
-      attachedTo declaration: some DeclGroupSyntax,
-      providingExtensionsOf type: some TypeSyntaxProtocol,
-      conformingTo protocols: [TypeSyntax],
-      in context: some MacroExpansionContext
+        of node: AttributeSyntax,
+        attachedTo declaration: some DeclGroupSyntax,
+        providingExtensionsOf type: some TypeSyntaxProtocol,
+        conformingTo protocols: [TypeSyntax],
+        in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        guard declaration.is(StructDeclSyntax.self)
+        guard
+            declaration.is(StructDeclSyntax.self)
                 || declaration.is(EnumDeclSyntax.self)
                 || declaration.is(ActorDeclSyntax.self)
-                || declaration.is(ClassDeclSyntax.self) else {
-            context.diagnose(Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum))
+                || declaration.is(ClassDeclSyntax.self)
+        else {
+            context.diagnose(
+                Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum))
             return []
         }
 
@@ -36,9 +41,9 @@ public struct AIToolMacro: ExtensionMacro {
         let extensionDecl = try ExtensionDeclSyntax("extension \(type.trimmed): AITool") {
             """
             public static var toolSchemas: [String] { \(raw: toolSchemaDecl(for: functions)) }
-            
+
             public var methodMap: [String: Any] { \(raw: methodMap(for: functions)) }
-            
+
             public func call(_ methodName: String, args: [String: Data]) async throws -> Sendable? { \(raw: call(for: functions)) }
             """
         }
@@ -47,7 +52,8 @@ public struct AIToolMacro: ExtensionMacro {
     }
 
     private static func toolSchemaDecl(for functions: [FunctionDeclSyntax]) -> DeclSyntax {
-        let toolSchemas = functions
+        let toolSchemas =
+            functions
             .compactMap { $0.toolSchema }
             .map { name, description, parametersJsonSchema in
                 """
@@ -82,17 +88,20 @@ public struct AIToolMacro: ExtensionMacro {
                     param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 }
                 .joined(separator: ", ")
-            let returnType = function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void"
-            let typeCast = "(\(paramTypes)) \(function.isAsyncFunction ? "async " : "")\(function.isThrowingFunction ? "throws " : "")-> \(returnType)"
+            let returnType =
+                function.signature.returnClause?.type.description.trimmingCharacters(
+                    in: .whitespacesAndNewlines) ?? "Void"
+            let typeCast =
+                "(\(paramTypes)) \(function.isAsyncFunction ? "async " : "")\(function.isThrowingFunction ? "throws " : "")-> \(returnType)"
             return #""\#(name)": self.\#(name) as \#(typeCast)"#
         }
         let dictBody = entries.joined(separator: ",\n")
         return
-               #"""
-               [
-               \#(raw: dictBody)
-               ]
-               """#
+            #"""
+            [
+            \#(raw: dictBody)
+            ]
+            """#
     }
 
     private static func call(for functions: [FunctionDeclSyntax]) -> DeclSyntax {
@@ -102,16 +111,20 @@ public struct AIToolMacro: ExtensionMacro {
             let paramCasts = params.enumerated().map { idx, param in
                 let type = param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 let label = param.firstName.text
-                return "let data = args[\"\(label)\"], let \(label) = try? JSONDecoder().decode(\(type).self, from: data)"
+                return
+                    "let data = args[\"\(label)\"], let \(label) = try? JSONDecoder().decode(\(type).self, from: data)"
             }.joined(separator: ",\n")
             let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
             let tryKeyword = function.isThrowingFunction ? "try " : ""
             let throwsKeyword = function.isThrowingFunction ? "throws " : ""
             let awaitKeyword = function.isAsyncFunction ? "await " : ""
             let asyncKeyword = function.isAsyncFunction ? "async " : ""
-            let fnType = "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(asyncKeyword)\(throwsKeyword)-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
-            let guardArgs = params.isEmpty ? "" :
-                """
+            let fnType =
+                "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(asyncKeyword)\(throwsKeyword)-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
+            let guardArgs =
+                params.isEmpty
+                ? ""
+                : """
                 guard \(paramCasts) else { return nil }
                 """
             let callArgs = params.isEmpty ? "" : paramNames

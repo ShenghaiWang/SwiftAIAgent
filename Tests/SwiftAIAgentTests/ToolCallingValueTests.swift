@@ -1,14 +1,16 @@
 import Foundation
 import Testing
+
 @testable import SwiftAIAgent
 
 struct ToolCallingValueTests {
     @Test
     func testParsing() throws {
-        let toolCallingValue = ToolCallingValue(value:
-            """
-                {"name":"getWeather","args":{"city":"Sydney", "date": { "month":"Jan" }}}
-            """)!
+        let toolCallingValue = ToolCallingValue(
+            value:
+                """
+                    {"name":"getWeather","args":{"city":"Sydney", "date": { "month":"Jan" }}}
+                """)!
         let sydneyEncoded = try JSONEncoder().encode("Sydney")
         #expect(toolCallingValue.name == "getWeather")
         #expect(toolCallingValue.args["city"] == sydneyEncoded)
@@ -20,7 +22,7 @@ struct ToolCallingValueTests {
                 """,
                 """
                 {"city":"Sydney""date":{"month":"Jan"}}
-                """
+                """,
             ].contains(toolCallingValue.argsString)
         )
     }

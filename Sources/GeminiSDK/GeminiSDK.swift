@@ -1,6 +1,7 @@
 import Foundation
+
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+    import FoundationNetworking
 #endif
 
 public final class GeminiSDK: Sendable {
@@ -9,9 +10,11 @@ public final class GeminiSDK: Sendable {
     let model: String
     let urlSession: URLSession
 
-    public init(model: String,
-                apiKey: String,
-                urlSessionConfiguration: URLSessionConfiguration? = nil) {
+    public init(
+        model: String,
+        apiKey: String,
+        urlSessionConfiguration: URLSessionConfiguration? = nil
+    ) {
         self.model = model
         self.apiKey = apiKey
         if let configuration = urlSessionConfiguration {

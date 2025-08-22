@@ -47,7 +47,10 @@ public struct Content: Codable {
             let willContinue: Bool
             let scheduling: Scheduling
 
-            public init(id: String, name: String, response: String, willContinue: Bool, scheduling: Scheduling) {
+            public init(
+                id: String, name: String, response: String, willContinue: Bool,
+                scheduling: Scheduling
+            ) {
                 self.id = id
                 self.name = name
                 self.response = response
@@ -78,13 +81,15 @@ public struct Content: Codable {
         let executableCode: ExecutableCode?
         let codeExecutionResult: CodeExecutionResult?
 
-        public init(text: String?,
-                    inlineData: InlineData? = nil,
-                    functionCall: String? = nil,
-                    functionResponse: FunctionResponse? = nil,
-                    fileData: FileData? = nil,
-                    executableCode: ExecutableCode? = nil,
-                    codeExecutionResult: CodeExecutionResult? = nil) {
+        public init(
+            text: String?,
+            inlineData: InlineData? = nil,
+            functionCall: String? = nil,
+            functionResponse: FunctionResponse? = nil,
+            fileData: FileData? = nil,
+            executableCode: ExecutableCode? = nil,
+            codeExecutionResult: CodeExecutionResult? = nil
+        ) {
             self.text = text
             self.inlineData = inlineData
             self.functionCall = functionCall
@@ -109,9 +114,12 @@ extension Content.Part: Codable {
         text = try? container.decode(String.self, forKey: .text)
         inlineData = try? container.decodeIfPresent(InlineData.self, forKey: .inlineData)
         functionCall = nil
-        functionResponse = try? container.decodeIfPresent(FunctionResponse.self, forKey: .functionResponse)
+        functionResponse = try? container.decodeIfPresent(
+            FunctionResponse.self, forKey: .functionResponse)
         fileData = try? container.decodeIfPresent(FileData.self, forKey: .fileData)
-        executableCode = try? container.decodeIfPresent(ExecutableCode.self, forKey: .executableCode)
-        codeExecutionResult = try? container.decodeIfPresent(CodeExecutionResult.self, forKey: .codeExecutionResult)
+        executableCode = try? container.decodeIfPresent(
+            ExecutableCode.self, forKey: .executableCode)
+        codeExecutionResult = try? container.decodeIfPresent(
+            CodeExecutionResult.self, forKey: .codeExecutionResult)
     }
 }

@@ -153,7 +153,8 @@ extension Data {
             for (key, value) in dict {
                 if key == "functionCall" {
                     if let data = try? JSONSerialization.data(withJSONObject: value, options: []),
-                       let str = String(data: data, encoding: .utf8) {
+                        let str = String(data: data, encoding: .utf8)
+                    {
                         results.append(str)
                     }
                 } else {

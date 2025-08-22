@@ -1,5 +1,5 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 
 /// File IO tool
 @AITool

@@ -27,11 +27,13 @@ public protocol AIAgentModel: Sendable, CustomStringConvertible {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
     /// - Returns: A wrapper of all types of output of LLM
-    func run(prompt: String,
-             outputSchema: String?,
-             toolSchemas: [String]?,
-             modalities: [Modality]?,
-             inlineData: InlineData?) async throws -> [AIAgentOutput]
+    func run(
+        prompt: String,
+        outputSchema: String?,
+        toolSchemas: [String]?,
+        modalities: [Modality]?,
+        inlineData: InlineData?
+    ) async throws -> [AIAgentOutput]
 
     /// Rum prompt with LLM with structured output schema
     /// - Parameters:
@@ -41,11 +43,13 @@ public protocol AIAgentModel: Sendable, CustomStringConvertible {
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
     /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
-    func run(prompt: String,
-             outputSchema: AIModelSchema.Type,
-             toolSchemas: [String]?,
-             modalities: [Modality]?,
-             inlineData: InlineData?) async throws -> [AIAgentOutput]
+    func run(
+        prompt: String,
+        outputSchema: AIModelSchema.Type,
+        toolSchemas: [String]?,
+        modalities: [Modality]?,
+        inlineData: InlineData?
+    ) async throws -> [AIAgentOutput]
 
     /// Description of the model capability and usage to be used in planning process
     nonisolated var description: String { get }

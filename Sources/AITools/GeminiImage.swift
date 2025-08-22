@@ -1,5 +1,5 @@
-import Foundation
 import AIAgentMacros
+import Foundation
 import GeminiSDK
 
 /// Image generation tool using Gemini Models
@@ -25,9 +25,11 @@ public struct GeminiImage {
     let apiKey: String
     let model: String
     let baseFolder: String
-    public init(apiKey: String,
-                model: String = "gemini-2.0-flash-preview-image-generation",
-                baseFolder: String) {
+    public init(
+        apiKey: String,
+        model: String = "gemini-2.0-flash-preview-image-generation",
+        baseFolder: String
+    ) {
         self.apiKey = apiKey
         self.model = model
         self.baseFolder = baseFolder

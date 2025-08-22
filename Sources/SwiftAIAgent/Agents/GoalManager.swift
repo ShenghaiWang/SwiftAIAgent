@@ -1,6 +1,6 @@
+import AIAgentMacros
 import Foundation
 import GeminiSDK
-import AIAgentMacros
 
 /// The actor managing goal
 public actor GoalManager {
@@ -18,24 +18,24 @@ public actor GoalManager {
     private(set) var clarifications: [String] = []
 
     private var clarifyInstructions: String {
-            """
-            <goal>\(goal)</goal>
-            <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
-            Is the above goal clear? Please ask for clarifications if needed.
-            Ignore the tools/function calls at this stage. 
-            Returns questions that need to be asked in the specified json schema.
-            """
+        """
+        <goal>\(goal)</goal>
+        <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
+        Is the above goal clear? Please ask for clarifications if needed.
+        Ignore the tools/function calls at this stage. 
+        Returns questions that need to be asked in the specified json schema.
+        """
     }
 
     private var planInstructions: String {
-            """
-            <goal>\(goal)</goal>
-            <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
-            You are one excellent planner. 
-            Please break this goal into tasks that suitalbe for AI Agents to execute.
-            You can also assign the following tools to tasks if needed
-            <avaialbleTools>\(tools.toolDefinitions.joined(separator: ","))</avaialbleTools>
-            """
+        """
+        <goal>\(goal)</goal>
+        <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
+        You are one excellent planner. 
+        Please break this goal into tasks that suitalbe for AI Agents to execute.
+        You can also assign the following tools to tasks if needed
+        <avaialbleTools>\(tools.toolDefinitions.joined(separator: ","))</avaialbleTools>
+        """
     }
 
     /// Initialise a GoalManager
@@ -45,11 +45,13 @@ public actor GoalManager {
     ///  - models: The Models that can be used to setup agents and workflow
     ///  - tools: The tools can be used by this agent
     ///  - mcpServers: The MCP server can be used by this agent
-    public init(goal: String,
-                managerAgent: AIAgent,
-                models: [AIAgentModel],
-                tools: [any AIAgentTool] = [],
-                mcpServers: [MCPServer] = []) {
+    public init(
+        goal: String,
+        managerAgent: AIAgent,
+        models: [AIAgentModel],
+        tools: [any AIAgentTool] = [],
+        mcpServers: [MCPServer] = []
+    ) {
         self.goal = goal
         self.managerAgent = managerAgent
         self.models = models
@@ -91,7 +93,8 @@ public actor GoalManager {
     private func runAICommand<T: AIModelSchema>(_ command: String) async throws -> T {
         let result = try await managerAgent.run(prompt: command, outputSchema: T.self)
         if case let .strongTypedValue(result) = result.allStrongTypedValues.first,
-           let task = result as? T {
+            let task = result as? T
+        {
             return task
         } else {
             throw Error.wrongResponseFormatFromAI
@@ -107,13 +110,15 @@ public actor GoalManager {
 
     private func workflow(for task: AITask) async throws -> Workflow {
         guard let subTasks = task.subTasks,
-                let model = models.first else { // TODO: select model based on planning
+            let model = models.first
+        else {  // TODO: select model based on planning
             throw GoalManager.Error.noPlan
         }
 
         var agentIds: [UUID] = []
         var steps: [Workflow.Step] = []
-        for subtask in subTasks { // TODO: Smarter workflow generation, sequence or paralletl? tools/mcpserver assignment etc.
+        for subtask in subTasks {
+            // TODO: Smarter workflow generation, sequence or paralletl? tools/mcpserver assignment etc.
             let context = AIAgentContext(
                 """
                 <finalGoal>\(self.goal)</finalGoal>
@@ -122,18 +127,19 @@ public actor GoalManager {
                 """
             )
             let taskTools: [AIAgentTool] =
-            if let subTaskTool = subtask.tools {
-                tools.filter { !Set($0.methodMap.keys).intersection(Set(subTaskTool)).isEmpty }
-            } else {
-                []
-            }
-            let taskMCPServers: [MCPServer] = [] // TODO: refine mcp servers
-            let agent = try await AIAgent(title: subtask.name,
-                                          model: model,
-                                          tools: taskTools,
-                                          mcpServers: taskMCPServers,
-                                          context: context,
-                                          instruction: subtask.details)
+                if let subTaskTool = subtask.tools {
+                    tools.filter { !Set($0.methodMap.keys).intersection(Set(subTaskTool)).isEmpty }
+                } else {
+                    []
+                }
+            let taskMCPServers: [MCPServer] = []  // TODO: refine mcp servers
+            let agent = try await AIAgent(
+                title: subtask.name,
+                model: model,
+                tools: taskTools,
+                mcpServers: taskMCPServers,
+                context: context,
+                instruction: subtask.details)
             // TODO: refine input flow
             for id in agentIds.dropLast() {
                 await agent.add(input: id)

@@ -7,7 +7,6 @@ struct PropertySchema {
     let description: String?
 }
 
-
 struct PropertySchemaParsed {
     let type: String
     let itemsType: String?

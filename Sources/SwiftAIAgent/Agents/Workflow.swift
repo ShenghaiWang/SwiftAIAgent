@@ -39,7 +39,8 @@ extension Workflow.Step {
         case let .single(agent): try await agent.run(prompt: prompt)
         case let .sequence(steps): try await runSequence(steps: steps, prompt: prompt)
         case let .parrallel(steps): try await runParrallel(steps: steps, prompt: prompt)
-        case let .conditional(condition, step): try await runConditional(condition: condition, step: step, prompt: prompt)
+        case let .conditional(condition, step):
+            try await runConditional(condition: condition, step: step, prompt: prompt)
         }
     }
 
@@ -62,7 +63,9 @@ extension Workflow.Step {
         }
     }
 
-    func runConditional(condition: @Sendable (AIAgentOutput) -> Bool, step: Self, prompt: String) async throws -> [AIAgentOutput] {
+    func runConditional(condition: @Sendable (AIAgentOutput) -> Bool, step: Self, prompt: String)
+        async throws -> [AIAgentOutput]
+    {
         condition(.text(prompt))
             ? try await step.run(prompt: prompt)
             : []
