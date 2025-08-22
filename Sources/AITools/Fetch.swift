@@ -30,11 +30,7 @@ public struct Fetch {
                 responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode ?? 0)
         }
         guard let html = String(data: data, encoding: .utf8) else { return nil }
-        do {
-            let doc = try SwiftSoup.parse(html)
-            return try doc.text()
-        } catch {
-            return nil
-        }
+        let doc = try SwiftSoup.parse(html)
+        return try doc.text()
     }
 }
