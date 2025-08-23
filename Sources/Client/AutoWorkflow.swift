@@ -4,21 +4,40 @@ import GeminiSDK
 import SwiftAIAgent
 
 struct AutoWorkflow {
+    enum Example {
+        case summariseAIHistory
+        case SummariseMeetingWithImage
+        case latestNewsInSydney
+
+        var goal: String {
+            switch self {
+            case .summariseAIHistory:
+                """
+                - Summarise AI history
+                - gemerate an image for the article
+                - save it in a markdow file 
+                """
+            case .SummariseMeetingWithImage:
+                """
+                - Provide a summary of the most recent Trump-Putin meeting.
+                - accompanied by a political cartoon.
+                - Save it in a markdown file.
+                """
+            case .latestNewsInSydney:
+                """
+                - Latest News in Sydney (Past 24 Hours)
+                - Save it in a markdown file.
+                """
+            }
+        }
+    }
     let model: AIAgentModel
     let managerAgent: AIAgent
     let goalManager: GoalManager
 
-    static func run() async throws {
+    static func run(goal: AutoWorkflow.Example) async throws {
          let model = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
-         let autoWorkflow = try await AutoWorkflow(
-             model: model,
-             goal:
-                 """
-                 - Summarise AI history
-                 - gemerate an image for the article
-                 - save it in a markdow file 
-                 """
-         )
+         let autoWorkflow = try await AutoWorkflow(model: model, goal: goal.goal)
          try await autoWorkflow.runInternal()
      }
 
