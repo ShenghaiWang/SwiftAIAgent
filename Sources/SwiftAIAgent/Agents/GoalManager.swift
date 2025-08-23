@@ -141,7 +141,9 @@ public actor GoalManager {
                 tools: taskTools,
                 mcpServers: taskMCPServers,
                 context: context,
-                instruction: subtask.details)
+                instruction: subtask.details,
+                temperature: subtask.temperature
+            )
             // TODO: refine input flow
             for id in agentIds.dropLast() {
                 await agent.add(input: id)
