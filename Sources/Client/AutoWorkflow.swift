@@ -6,7 +6,7 @@ import SwiftAIAgent
 struct AutoWorkflow {
     enum Example {
         case summariseAIHistory
-        case SummariseMeetingWithImage
+        case summariseMeetingWithImage
         case latestNewsInSydney
 
         var goal: String {
@@ -17,7 +17,7 @@ struct AutoWorkflow {
                 - gemerate an image for the article
                 - save it in a markdow file 
                 """
-            case .SummariseMeetingWithImage:
+            case .summariseMeetingWithImage:
                 """
                 - Provide a summary of the most recent Trump-Putin meeting.
                 - accompanied by a political cartoon.
@@ -36,10 +36,10 @@ struct AutoWorkflow {
     let goalManager: GoalManager
 
     static func run(goal: AutoWorkflow.Example) async throws {
-         let model = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
-         let autoWorkflow = try await AutoWorkflow(model: model, goal: goal.goal)
-         try await autoWorkflow.runInternal()
-     }
+        let model = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
+        let autoWorkflow = try await AutoWorkflow(model: model, goal: goal.goal)
+        try await autoWorkflow.runInternal()
+    }
 
     init(model: AIAgentModel, goal: String) async throws {
         self.model = model
