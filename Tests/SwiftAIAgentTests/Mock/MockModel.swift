@@ -11,7 +11,8 @@ struct MockModel: AIAgentModel {
         outputSchema: AIModelSchema.Type,
         toolSchemas: [String]? = nil,
         modalities: [Modality]? = nil,
-        inlineData: InlineData? = nil
+        inlineData: InlineData? = nil,
+        temperature: Float?
     ) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
         return [.text(result)]
@@ -28,7 +29,8 @@ struct MockModel: AIAgentModel {
         outputSchema: String?,
         toolSchemas: [String]? = nil,
         modalities: [Modality]? = nil,
-        inlineData: InlineData? = nil
+        inlineData: InlineData? = nil,
+        temperature: Float?
     ) async throws -> [AIAgentOutput] {
         let result = try await textGeneration(prompt: prompt)
         return [.text(result)]

@@ -17,6 +17,7 @@ public final actor AIAgent: Sendable {
     nonisolated let tools: [any AIAgentTool]
     nonisolated let mcpServers: [MCPServer]
     nonisolated let instruction: String?
+    nonisolated let temperature: Float?
     private(set) var inputs: [UUID] = []
     private let mcpClients: [UUID: Client]
     private(set) var mcpTools: [UUID: [MCP.Tool]] = [:]
@@ -34,7 +35,8 @@ public final actor AIAgent: Sendable {
         tools: [any AIAgentTool] = [],
         mcpServers: [MCPServer] = [],
         context: AIAgentContext? = nil,
-        instruction: String? = nil
+        instruction: String? = nil,
+        temperature: Float? = 0.7,
     ) async throws {
         self.title = title
         self.model = model
@@ -42,6 +44,7 @@ public final actor AIAgent: Sendable {
         self.tools = tools
         self.mcpServers = mcpServers
         self.instruction = instruction
+        self.temperature = temperature
         inputs.append(id)
         mcpClients = try await mcpServers.async.map { try await $0.connect() }.collect()
             .reduce(
@@ -106,7 +109,7 @@ public final actor AIAgent: Sendable {
         prompt: String,
         outputSchema: T,
         modalities: [Modality] = [.text],
-        inlineData: InlineData? = nil
+        inlineData: InlineData? = nil,
     ) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n\(description)\n===Input===\n\(combinedPrompt)\n")
@@ -117,14 +120,16 @@ public final actor AIAgent: Sendable {
                     outputSchema: schema,
                     toolSchemas: toolDefinitions,
                     modalities: modalities,
-                    inlineData: inlineData)
+                    inlineData: inlineData,
+                    temperature: temperature)
             } else {
                 try await model.run(
                     prompt: combinedPrompt,
                     outputSchema: outputSchema as? String,
                     toolSchemas: toolDefinitions,
                     modalities: modalities,
-                    inlineData: inlineData)
+                    inlineData: inlineData,
+                    temperature: temperature)
             }
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls

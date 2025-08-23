@@ -37,6 +37,11 @@ struct AISubTask {
 
     /// The tool names that needed for this sub task. It should come from the function calls that passed into LLM
     let tools: [String]?
+
+    /// Suggested the temperature to be used by LLM, usually between 0.0 and 1.0
+    /// The big the number, the creative the LLM would be.
+    /// Please assign this value based the level of the creativity that task needs
+    let temperature: Float
 }
 
 extension AITask: CustomStringConvertible {
@@ -55,6 +60,7 @@ extension AISubTask: CustomStringConvertible {
         """
         ===Task name: \(name)===
         Details: \(details)
+        Temperature: \(temperature)
         Tools: \(tools?.joined(separator: ",") ?? "")
 
         """

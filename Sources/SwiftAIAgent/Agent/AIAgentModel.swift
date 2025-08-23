@@ -26,13 +26,15 @@ public protocol AIAgentModel: Sendable, CustomStringConvertible {
     ///  - outputSchema: the output schema in json string format
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
+    ///  - temperature: the creativity level of the model
     /// - Returns: A wrapper of all types of output of LLM
     func run(
         prompt: String,
         outputSchema: String?,
         toolSchemas: [String]?,
         modalities: [Modality]?,
-        inlineData: InlineData?
+        inlineData: InlineData?,
+        temperature: Float?,
     ) async throws -> [AIAgentOutput]
 
     /// Rum prompt with LLM with structured output schema
@@ -42,13 +44,15 @@ public protocol AIAgentModel: Sendable, CustomStringConvertible {
     ///  - toolSchemas: the tool schemas that can be used
     ///  - modalities: the modalities of the generated content
     ///  - inlineData: the data uploaded to work with the prompt
+    ///  - temperature: the creativity level of the model
     /// - Returns: A wrapper of all types of output of LLM that contain strong typed value
     func run(
         prompt: String,
         outputSchema: AIModelSchema.Type,
         toolSchemas: [String]?,
         modalities: [Modality]?,
-        inlineData: InlineData?
+        inlineData: InlineData?,
+        temperature: Float?,
     ) async throws -> [AIAgentOutput]
 
     /// Description of the model capability and usage to be used in planning process

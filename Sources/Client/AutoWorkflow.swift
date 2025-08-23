@@ -8,6 +8,7 @@ struct AutoWorkflow {
         case summariseAIHistory
         case summariseMeetingWithImage
         case latestNewsInSydney
+        case ceativeWriting
 
         var goal: String {
             switch self {
@@ -27,6 +28,12 @@ struct AutoWorkflow {
                 """
                 - Latest News in Sydney (Past 24 Hours)
                 - Save it in a markdown file.
+                """
+            case .ceativeWriting:
+                """
+                - write an emotional story filled with dramatic moments, 
+                - exploring the relationship between a pet and its owner.
+                - save it in a markdown file
                 """
             }
         }
@@ -59,13 +66,14 @@ struct AutoWorkflow {
                 GoogleSearch(cx: cx, key: key),
                 Fetch(),
                 GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
+                DateTime(),
             ],
             mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
     }
 
     func runInternal() async throws {
         do {
-            let result = try await goalManager.run()
+            let result = try await goalManager.run(noFutherClarification: true)
             print(result)
         } catch {
             if case let GoalManager.Error.needClarification(questions) = error {

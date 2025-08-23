@@ -4,7 +4,7 @@ public protocol AIModelSchema: Decodable, Sendable {
     static var outputSchema: String { get }
 }
 
-public protocol AITool: Decodable, Sendable, CustomStringConvertible {
+public protocol AITool: Sendable, CustomStringConvertible {
     static var toolSchemas: [String] { get }
     var methodMap: [String: Any] { get }
     func call(_ methodName: String, args: [String: Data]) async throws -> Sendable?
