@@ -59,6 +59,7 @@ struct AutoWorkflow {
                 GoogleSearch(cx: cx, key: key),
                 Fetch(),
                 GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
+                DateTime(),
             ],
             mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
     }

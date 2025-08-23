@@ -33,7 +33,9 @@ public actor GoalManager {
         <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
         You are one excellent planner. 
         Please break this goal into tasks that suitalbe for AI Agents to execute.
-        You can also assign the following tools to tasks if needed
+        You can also assign the following tools to agents if needed.
+        There might be multiple tools that can achive the same goal, 
+        use your best judgement to assign the best suitable tools to the agents.
         <avaialbleTools>\(tools.toolDefinitions.joined(separator: ","))</avaialbleTools>
         """
     }

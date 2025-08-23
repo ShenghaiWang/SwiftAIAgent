@@ -106,7 +106,8 @@ public final actor AIAgent: Sendable {
         prompt: String,
         outputSchema: T,
         modalities: [Modality] = [.text],
-        inlineData: InlineData? = nil
+        inlineData: InlineData? = nil,
+        temperature: Float? = nil,
     ) async throws -> [AIAgentOutput] {
         let combinedPrompt = await combined(prompt: prompt)
         logger.debug("\n\(description)\n===Input===\n\(combinedPrompt)\n")
@@ -117,14 +118,16 @@ public final actor AIAgent: Sendable {
                     outputSchema: schema,
                     toolSchemas: toolDefinitions,
                     modalities: modalities,
-                    inlineData: inlineData)
+                    inlineData: inlineData,
+                    temperature: temperature)
             } else {
                 try await model.run(
                     prompt: combinedPrompt,
                     outputSchema: outputSchema as? String,
                     toolSchemas: toolDefinitions,
                     modalities: modalities,
-                    inlineData: inlineData)
+                    inlineData: inlineData,
+                    temperature: temperature)
             }
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
