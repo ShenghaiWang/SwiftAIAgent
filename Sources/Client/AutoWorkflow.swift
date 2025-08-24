@@ -9,6 +9,7 @@ struct AutoWorkflow {
         case summariseMeetingWithImage
         case latestNewsInSydney
         case ceativeWriting
+        case saveSearchResultToGoogleSheets
 
         var goal: String {
             switch self {
@@ -35,6 +36,11 @@ struct AutoWorkflow {
                 - exploring the relationship between a pet and its owner.
                 - save it in a markdown file
                 """
+            case .saveSearchResultToGoogleSheets:
+                """
+                - search the top 10 web pages that are about AI Coding practice
+                - save the title and url of the webpage to the google sheet.
+                """
             }
         }
     }
@@ -53,10 +59,15 @@ struct AutoWorkflow {
         self.managerAgent = try await AIAgent(title: "Manager", model: model)
         let baseFolder = "."
         let fileIO = FileIO(baseFolder: baseFolder)
+        let googleServiceAccount =
+            ProcessInfo.processInfo.environment["Google_Service_Account"] ?? ""
+        let googleSheetId = ProcessInfo.processInfo.environment["Google_Sheet_ID"] ?? ""
         let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
         let key = ProcessInfo.processInfo.environment["key"] ?? ""
         let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
         let gitHubToken = ProcessInfo.processInfo.environment["GitHubToken"] ?? ""
+        let googleSheetTool = try GoogleSheets(
+            serviceAccount: googleServiceAccount, sheetId: googleSheetId)
         self.goalManager = GoalManager(
             goal: goal,
             managerAgent: managerAgent,
@@ -67,6 +78,7 @@ struct AutoWorkflow {
                 Fetch(),
                 GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
                 DateTime(),
+                googleSheetTool,
             ],
             mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
     }

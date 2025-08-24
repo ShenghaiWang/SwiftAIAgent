@@ -1,5 +1,5 @@
 {
-  "originHash" : "158ca0ac6afc8e84d7f659ab3166aa0af27952c555c3412560ab126b4be3e5eb",
+  "originHash" : "ff8554dfb16b2760eb392e42c7fde1e2de1295cd2f7aa05615c557af263e4151",
   "pins" : [
     {
       "identity" : "eventsource",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "07957602bb99a5355c810187e66e6ce378a1057d",
         "version" : "1.1.1"
+      }
+    },
+    {
+      "identity" : "googlesheetsswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ShenghaiWang/GoogleSheetsSwift.git",
+      "state" : {
+        "revision" : "08dca5eae88c3bde75d8f0a52ee7e347f1d3d720",
+        "version" : "1.0.0"
       }
     },
     {
