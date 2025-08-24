@@ -53,6 +53,11 @@ var goal: String {
         - search the top 10 web pages that are about AI Coding practice
         - save the title and url of the webpage to the google sheet.
         """
+    case .tripPlanning:
+        """
+        - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
+        - save it in a markdown file
+        """
     }
 }     
 ```
