@@ -12,55 +12,52 @@ Leverage ‎`Swift` to build AI Agent systems that are both simple and swift.
 There are demos in `main.swift` in `Client` target. You can run them directly to understand how it works.
 Please note, need to configure the environment varibales `GEMINI_API_KEY`, `GitHubToken`(for GitHub MCP Server), `cx` & `key` (for Google search tool).
 
-```swift
-// MCP connection example
-try await MCPConnection().run()
-
-// Workflow example
-try await AgentWorkflow.manual.run()
-try await AgentWorkflow.automatic.run()
-
-// Tool calling example
-try await ToolCalling.run()
-
-// Gemini Image Generation
-try await GminiImageGeneration.run()
-
-// Gemini Speech Generation
-try await GminiSpeechGeneration.run()
-
-// Google search tool
-try await GoogleSearchTool.run()
-
-// Tool & MCP
-try await GoogleSearchTool.run()
-```
-
 ### Auto workflow
 
 ```swift
-let model = GeminiSDK(model: "gemini-2.5-flash", apiKey: ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "")
 let autoWorkflow = AutoWorkflow(model: model, goal: "Write an article about history of AI and output it in markdown format")
 try await autoWorkflow.run()
 ```
 
-Let AI model figure out what's the best to do. Only support sequence flow at the moment. It might ask clarification question depending on your goal. If you think you want it run without futher questions, just input `run without more questions` to kick off the workflow.
+The AI model figures out what's the best to do for the goal. It only support sequence flow at the moment in auto mode.
 
 #### What this can do depends on the tools/mcp servers we configure, for example:
+```swift
+var goal: String {
+    switch self {
+    case .summariseAIHistory:
+        """
+        - Summarise AI history
+        - gemerate an image for the article
+        - save it in a markdow file 
+        """
+    case .summariseMeetingWithImage:
+        """
+        - Provide a summary of the most recent Trump-Putin meeting.
+        - accompanied by a political cartoon.
+        - Save it in a markdown file.
+        """
+    case .latestNewsInSydney:
+        """
+        - Latest News in Sydney (Past 24 Hours)
+        - Save it in a markdown file.
+        """
+    case .ceativeWriting:
+        """
+        - write an emotional story filled with dramatic moments, 
+        - exploring the relationship between a pet and its owner.
+        - save it in a markdown file
+        """
+    case .saveSearchResultToGoogleSheets:
+        """
+        - search the top 10 web pages that are about AI Coding practice
+        - save the title and url of the webpage to the google sheet.
+        """
+    }
+}     
+```
 
-- with `GoogleSearch`, `Fetch`, `FileIO` tools, it can achive goals like: 
-
-```
-Write a summary of developments in computer science over the past 12 months, 
-using information from the top 10 websites in the search results and save it in a markdown file.
-```
-The result of my last run of this goal was [computer_science_developments.md](./Examples/computer_science_developments.md)
-
-- with `GitHub MCP Server`, we can ask it to perform all the tasks this mcp server provides like:
-```
-Get all the tags of https://github.com/ShenghaiWang/SwiftAIAgent.git
-```
-The result of my last run of this goal was `"The following tags were found for the repository: v0.0.4, v0.0.3, v0.0.2, v0.0.1")`
+You can also check out [this website](https://deepresearch.timwang.au), which is built on top of this agent framework.
 
 ### Mannal workflow
 
@@ -82,7 +79,7 @@ let workflow = Workflow(step: .sequence([draftStep, reviewStep, finaliseStep]))
 let result = try await workflow.run(prompt: "Let's write this artile")
 ```
 
-Orchestrate workflow manually. Support sequence, parrallel, condintinal flow types.
+Orchestrate workflows manually. Support sequence, parrallel and condintinal flow types.
 
 ## Structured output
 
