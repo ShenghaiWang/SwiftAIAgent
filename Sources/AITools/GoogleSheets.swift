@@ -1,4 +1,4 @@
-@preconcurrency import GoogleSheetsSwift
+import GoogleSheetsSDK
 import Foundation
 import AIAgentMacros
 
@@ -11,11 +11,7 @@ public struct GoogleSheets: Sendable {
     public init(serviceAccount: String, sheetId: String) throws {
         self.serviceAccount = serviceAccount
         self.sheetId = sheetId
-        let tokenManager = try ServiceAccountTokenManager.loadFromFile(
-            serviceAccount,
-            useKeychain: false
-        )
-        self.googleSheetsClient = GoogleSheetsClient(tokenManager: tokenManager)
+        self.googleSheetsClient = try GoogleSheetsClient(serviceAccount: serviceAccount)
     }
 
     /// Append values to a range with simplified parameters

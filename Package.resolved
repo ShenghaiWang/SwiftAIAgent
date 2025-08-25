@@ -1,5 +1,5 @@
 {
-  "originHash" : "9945dd4d6dcafe425fce2fcab4bb20eb82bc275be471dbb2c12c8f4be36e7f3b",
+  "originHash" : "85e85cc8d34b0374adc4de0b960759372372c36bae59e3995142c84d03ebbfeb",
   "pins" : [
     {
       "identity" : "eventsource",
@@ -11,12 +11,48 @@
       }
     },
     {
-      "identity" : "googlesheetsswift",
+      "identity" : "googleapiswiftsdk",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShenghaiWang/GoogleSheetsSwift.git",
+      "location" : "https://github.com/ShenghaiWang/GoogleAPISwiftSDK.git",
       "state" : {
-        "revision" : "557234874a4a7a49919cf7f86ee221fc7a12c1bb",
-        "version" : "1.0.1"
+        "revision" : "a8c7e7894551b784ae67352dc85e2998cdc1c801",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "googleapitokenmanager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ShenghaiWang/GoogleAPITokenManager.git",
+      "state" : {
+        "revision" : "f3e2f0660d68622db0f5f7b2b812112070a042e8",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "jwt-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vapor/jwt-kit.git",
+      "state" : {
+        "revision" : "13e7513b3ba0afa13967daf77af2fb4ad087306c",
+        "version" : "4.13.5"
+      }
+    },
+    {
+      "identity" : "swift-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-asn1.git",
+      "state" : {
+        "revision" : "f70225981241859eb4aa1a18a75531d26637c8cc",
+        "version" : "1.4.0"
+      }
+    },
+    {
+      "identity" : "swift-crypto",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-crypto.git",
+      "state" : {
+        "revision" : "334e682869394ee239a57dbe9262bff3cd9495bd",
+        "version" : "3.14.0"
       }
     },
     {

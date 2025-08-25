@@ -58,6 +58,11 @@ var goal: String {
         - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
         - save it in a markdown file
         """
+    case .getGitHubRepotags:
+        """
+        - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
+        - save it in a markdown file
+        """
     }
 }     
 ```
