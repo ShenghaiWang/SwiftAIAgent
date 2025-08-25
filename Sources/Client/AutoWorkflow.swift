@@ -11,6 +11,7 @@ struct AutoWorkflow {
         case ceativeWriting
         case saveSearchResultToGoogleSheets
         case tripPlanning
+        case getGitHubRepotags
 
         var goal: String {
             switch self {
@@ -45,6 +46,11 @@ struct AutoWorkflow {
             case .tripPlanning:
                 """
                 - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
+                - save it in a markdown file
+                """
+            case .getGitHubRepotags:
+                """
+                - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
                 - save it in a markdown file
                 """
             }

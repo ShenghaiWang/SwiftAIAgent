@@ -1,4 +1,4 @@
-@preconcurrency import GoogleSheetsSwift
+import GoogleSheetsSDK
 import Foundation
 import AIAgentMacros
 
@@ -6,31 +6,25 @@ import AIAgentMacros
 public struct GoogleSheets: Sendable {
     let serviceAccount: String
     let sheetId: String
-    private let googleSheetsClient: GoogleSheetsClient
+    private let googleSheetsClient: Client
 
     public init(serviceAccount: String, sheetId: String) throws {
         self.serviceAccount = serviceAccount
         self.sheetId = sheetId
-        let tokenManager = try ServiceAccountTokenManager.loadFromFile(
-            serviceAccount,
-            useKeychain: false
-        )
-        self.googleSheetsClient = GoogleSheetsClient(tokenManager: tokenManager)
+        self.googleSheetsClient = try Client(accountServiceFile: serviceAccount)
     }
 
     /// Append values to a range with simplified parameters
     /// - Parameters:
-    ///   - range: The A1 notation range to append to
     ///   - values: 2D array of values to append
+    ///   - range: The A1 notation range to append to
     /// - Returns: AppendValuesResponse containing append information
     /// - Throws: GoogleSheetsError if the operation fails
     func appendToRange(values: [[String]], range: String) async throws {
-        _ = try await googleSheetsClient.appendToRange(
-            sheetId,
-            range: range,
-            values: values,
-            majorDimension: .rows,
-            valueInputOption: .userEntered
+        _ = try await googleSheetsClient.sheets_spreadsheets_values_append(
+            spreadsheetId: sheetId,
+            sheetName: "Sheet1",
+            values: values.map { try $0.map { try .init(unvalidatedValue: $0) }  }
         )
     }
 }

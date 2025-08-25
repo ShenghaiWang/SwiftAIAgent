@@ -17,8 +17,8 @@ extension MCPServer {
         switch self {
         case let .stdio(command, args):
             let process = Process()
-            process.executableURL = URL(fileURLWithPath: "uvx")  // Make sure uvx is available
-            process.arguments = ["mcpxcodebuild"]
+            process.executableURL = URL(fileURLWithPath: command)  // Make sure uvx is available
+            process.arguments = args
 
             let inputPipe = Pipe()
             let outputPipe = Pipe()
@@ -91,9 +91,9 @@ extension Tool.Content {
     var aiAgentOutput: AIAgentOutput {
         switch self {
         case let .text(text): AIAgentOutput.text(text)
-        case let .audio(data: data, mimeType: mimeType):
+        case let .audio(data: data, mimeType: _):
             AIAgentOutput.audio(Data(base64Encoded: data) ?? Data())
-        case let .image(data: data, mimeType: mimeType, metadata: metadata):
+        case let .image(data: data, mimeType: _, metadata: _):
             AIAgentOutput.image(Data(base64Encoded: data) ?? Data())
         case let .resource(uri: uri, mimeType: mimeType, text: text):
             .text("uri: \(uri)\n mimetype: \(mimeType)\n text: \(text ?? "")")
