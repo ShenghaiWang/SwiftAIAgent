@@ -24,7 +24,7 @@ public struct GoogleSheets: Sendable {
         _ = try await googleSheetsClient.sheets_spreadsheets_values_append(
             spreadsheetId: sheetId,
             sheetName: "Sheet1",
-            values: values.map { try $0.map { try .init(unvalidatedValue: $0) }  }
+            values: values.map { try $0.map { try .init(unvalidatedValue: $0) } }
         )
     }
 }

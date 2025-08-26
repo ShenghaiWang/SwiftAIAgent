@@ -75,21 +75,32 @@ public actor GoalManager {
             }
         }
         logger.debug("\n===Starting Planning===\n")
-        let task: AITask = try await runAICommand(planInstructions)
+        let task: AITask = try await plan()
         logger.debug("\n===Tasks planned===\n\(task)\n")
-        let workflow = try await workflow(for: task)
-        logger.debug("\n===Workflow Planned===\n\(workflow)\n")
-        return try await workflow.run(prompt: "kick off the task")
+        return try await execute(task: task)
     }
 
     /// Clarify the goal
     /// - Returns: The calriciation questions for the goal
     /// - Throws: `Swift.Error` in case of any network error or LLM error.
     public func clarify() async throws -> [String] {
-        logger.debug("\n===Checking Goal===\n")
         let clarification: AIGoalClarification = try await runAICommand(clarifyInstructions)
-        logger.debug("\n===Clarification Questions===\n\(clarification)\n")
         return clarification.questions
+    }
+
+    /// Plan for the goal
+    /// - Returns: The plan for the goal
+    /// - Throws: `Swift.Error` in case of any network error or LLM error.
+    public func plan() async throws -> AITask {
+        try await runAICommand(planInstructions)
+    }
+
+    /// Plan for the goal
+    /// - Returns: The plan for the goal
+    /// - Throws: `Swift.Error` in case of any network error or LLM error.
+    public func execute(task: AITask) async throws -> [AIAgentOutput] {
+        let workflow = try await workflow(for: task)
+        return try await workflow.run(prompt: "kick off the task")
     }
 
     private func runAICommand<T: AIModelSchema>(_ command: String) async throws -> T {

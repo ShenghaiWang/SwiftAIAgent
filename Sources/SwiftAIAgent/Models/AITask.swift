@@ -3,7 +3,7 @@ import Foundation
 
 /// Task that is broken down from a goal
 @AIModelSchema
-struct AITask {
+public struct AITask {
     /// A descriptive name of the task
     let name: String
     /// The details a task needs to do
@@ -22,7 +22,7 @@ struct AITask {
 // Have to have this as AIModelSchema cannot generate outputSchema recursively
 /// Task that is broken down from a goal
 @AIModelSchema
-struct AISubTask {
+public struct AISubTask {
     /// A descriptive name of the task
     let name: String
 
@@ -47,9 +47,10 @@ struct AISubTask {
 extension AITask: CustomStringConvertible {
     public var description: String {
         """
-        ===Task name: \(name)===
-        Details: \(details)
-        Sub Tasks:\n\(subTasks?.compactMap(\.description).joined() ?? "\n")
+        Task name:  \(name)
+        Details:    \(details)
+        Plan:       
+        \(subTasks?.compactMap(\.description).joined() ?? "")
 
         """
     }
@@ -58,11 +59,37 @@ extension AITask: CustomStringConvertible {
 extension AISubTask: CustomStringConvertible {
     public var description: String {
         """
+            Step:       \(name)
+            Details:    \(details)
+            LLM Setup:  Use \(temperature) for LLM temperature
+            Tools:      \(tools?.joined(separator: ",") ?? "")
+        
+        
+        """
+    }
+}
+
+extension AITask: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        """
         ===Task name: \(name)===
         Details: \(details)
-        Temperature: \(temperature)
-        Tools: \(tools?.joined(separator: ",") ?? "")
+        Sub Tasks:
+        \(subTasks?.compactMap(\.description).joined() ?? "")
 
+        """
+    }
+}
+
+extension AISubTask: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        """
+            ===Task name: \(name)===
+            Details: \(details)
+            Temperature: \(temperature)
+            Tools: \(tools?.joined(separator: ",") ?? "")
+
+        
         """
     }
 }
