@@ -23,7 +23,7 @@ struct AutoWorkflow {
                 """
             case .summariseMeetingWithImage:
                 """
-                - Provide a summary of the most recent Trump-Putin meeting.
+                - Summarise the meeting Trump and Putin have had in Alaska on 15 August 2025.
                 - accompanied by a political cartoon.
                 - Save it in a markdown file.
                 """
