@@ -1,5 +1,5 @@
 {
-  "originHash" : "27b4c26e8cf9ea53b5c3799b2513c4483fbb87778aeb3a30ffa28e23cb4f3f06",
+  "originHash" : "df312b9bff2fbba14d25982ff440ec30a503f80fbffcd01558f71bfd7fab56fb",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -34,7 +34,7 @@
       "location" : "https://github.com/ShenghaiWang/GoogleSwiftSDK.git",
       "state" : {
         "branch" : "master",
-        "revision" : "92fe423dac05114956ce65f9810908cc485ef291"
+        "revision" : "ecd6d2650525c43bb325b81a3a09d256b1f3aa66"
       }
     },
     {
@@ -44,6 +44,15 @@
       "state" : {
         "revision" : "13e7513b3ba0afa13967daf77af2fb4ad087306c",
         "version" : "4.13.5"
+      }
+    },
+    {
+      "identity" : "lrucache",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nicklockwood/LRUCache.git",
+      "state" : {
+        "revision" : "e0e9e039b33db8f2ef39b8e25607e38f46b13584",
+        "version" : "1.1.2"
       }
     },
     {
@@ -213,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/modelcontextprotocol/swift-sdk.git",
       "state" : {
-        "revision" : "e76d61155bf00482ea8f2ff78fca08a4eece410e",
-        "version" : "0.10.0"
+        "revision" : "f1b50e6de22b5206068bb09851d585f560d893c4",
+        "version" : "0.10.1"
       }
     },
     {
@@ -249,8 +258,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup.git",
       "state" : {
-        "revision" : "04a5da442816f764b2a8513c38420b4e6605145b",
-        "version" : "2.10.1"
+        "revision" : "db0428bcfced386943c05ba8ea3e607baa715e45",
+        "version" : "2.11.0"
       }
     }
   ],
