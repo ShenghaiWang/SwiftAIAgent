@@ -20,6 +20,7 @@ public actor GoalManager {
     private var clarifyInstructions: String {
         """
         <goal>\(goal)</goal>
+        <current_time>\(Date().ISO8601Format())</current_time>
         <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
         Is the above goal clear? Please ask for clarifications if needed.
         Ignore the tools/function calls at this stage. 

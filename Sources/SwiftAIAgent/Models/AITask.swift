@@ -63,8 +63,8 @@ extension AISubTask: CustomStringConvertible {
             Details:    \(details)
             LLM Setup:  Use \(temperature) for LLM temperature
             Tools:      \(tools?.joined(separator: ",") ?? "")
-        
-        
+
+
         """
     }
 }
@@ -89,7 +89,7 @@ extension AISubTask: CustomDebugStringConvertible {
             Temperature: \(temperature)
             Tools: \(tools?.joined(separator: ",") ?? "")
 
-        
+
         """
     }
 }
