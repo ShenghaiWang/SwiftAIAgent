@@ -1,4 +1,4 @@
 #!/bin/sh
 
-swift-format format --in-place --recursive .
-swift-format lint --recursive .
+swift format --in-place --recursive .
+swift format lint --recursive .

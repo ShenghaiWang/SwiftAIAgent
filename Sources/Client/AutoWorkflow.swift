@@ -11,7 +11,8 @@ struct AutoWorkflow {
         case ceativeWriting
         case saveSearchResultToGoogleSheets
         case tripPlanning
-        case getGitHubRepotags
+        case getGitHubRepoTags
+        case addImageAndTextToSlides
 
         var goal: String {
             switch self {
@@ -40,15 +41,21 @@ struct AutoWorkflow {
                 """
             case .saveSearchResultToGoogleSheets:
                 """
-                - search the top 10 web pages that are about AI Coding practice
+                - search top 10 web pages that are about AI Coding practice
                 - save the title and url of the webpage to the google sheet.
+                """
+            case .addImageAndTextToSlides:
+                """
+                - Creates a slide in the Slides file
+                - add text `Text added by AI` to the slide
+                - add image https://deepresearch.timwang.au/results/F3275E05-7864-4115-AA82-060A393D437F.png to the slide
                 """
             case .tripPlanning:
                 """
                 - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
                 - save it in a markdown file
                 """
-            case .getGitHubRepotags:
+            case .getGitHubRepoTags:
                 """
                 - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
                 - save it in a markdown file
@@ -74,12 +81,16 @@ struct AutoWorkflow {
         let googleServiceAccount =
             ProcessInfo.processInfo.environment["Google_Service_Account"] ?? ""
         let googleSheetId = ProcessInfo.processInfo.environment["Google_Sheet_ID"] ?? ""
+        let googlePresentationId =
+            ProcessInfo.processInfo.environment["Google_Presentation_ID"] ?? ""
         let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
         let key = ProcessInfo.processInfo.environment["key"] ?? ""
         let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
         let gitHubToken = ProcessInfo.processInfo.environment["GitHubToken"] ?? ""
-        let googleSheetTool = try GoogleSheets(
+        let googleSheetsTool = try GoogleSheets(
             serviceAccount: googleServiceAccount, sheetId: googleSheetId)
+        let googleSlidesTool = try GoogleSlides(
+            serviceAccount: googleServiceAccount, presentationId: googlePresentationId)
         self.goalManager = GoalManager(
             goal: goal,
             managerAgent: managerAgent,
@@ -90,14 +101,15 @@ struct AutoWorkflow {
                 Fetch(),
                 GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
                 DateTime(),
-                googleSheetTool,
+                googleSheetsTool,
+                googleSlidesTool,
             ],
             mcpServers: [.http(url: gitHubURL, token: gitHubToken)])
     }
 
     func runInternal() async throws {
         do {
-            let result = try await goalManager.run()
+            let result = try await goalManager.run(noFutherClarification: true)
             print(result)
         } catch {
             if case let GoalManager.Error.needClarification(questions) = error {

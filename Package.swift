@@ -41,6 +41,7 @@ let package = Package(
                 "AIAgentMacros",
                 "GeminiSDK",
                 .product(name: "GoogleSheetsSDK", package: "GoogleSwiftSDK"),
+                .product(name: "GoogleSlidesSDK", package: "GoogleSwiftSDK"),
                 .product(name: "SwiftSoup", package: "SwiftSoup"),
             ]),
         .target(
