@@ -7,9 +7,9 @@ public struct GoogleSlides: Sendable {
     /// Size of a rectengle
     @AIModelSchema
     struct Size {
-        /// The width of the rectangle, capped at 1000.
+        /// The width of the rectangle, capped at 700.
         let width: Double
-        /// The width of the rectangle, capped at 600.
+        /// The width of the rectangle, capped at 400.
         let height: Double
     }
 
@@ -21,6 +21,7 @@ public struct GoogleSlides: Sendable {
         /// the y offset
         let y: Double
     }
+
     let serviceAccount: String
     let presentationId: String
     private let googleSlidesClient: Client
@@ -57,21 +58,23 @@ public struct GoogleSlides: Sendable {
     }
 
     /// Insert text to slides
-    /// - Parameters
+    /// - Parameters:
     ///  - slideId: the id of the slide to be used for adding text
     ///  - text: the text to be added to the slide
-    ///  - size: the size of the text region, the size given needs to honur the position value
+    ///  - isTitle: `0` or `1`, `1` if the text is a title
+    ///  - size: the size of the text region, the size given needs to honur the position value so that the content not to overflow
     ///  - position: the postion of the text region
     /// - Throws: GoogleSheetsError if the operation fails
     /// - Returns: Operation status
     func insertTextToSlide(
         slideId: String,
         text: String,
+        isTitle: Int = 0,  // use `Int` type just to tolerate LLM. It's more reliable to use 0/1 for bool values
         size: Size,
-        position: Position
+        position: Position,
     ) async throws -> String {
         let id = UUID().uuidString
-        return try await batchUpdateSlides(
+        let result = try await batchUpdateSlides(
             requests: [
                 .init(
                     createShape:
@@ -88,13 +91,28 @@ public struct GoogleSlides: Sendable {
                             objectId: id,
                             text: text)),
             ])
+        guard isTitle == 1 else { return result }
+        return try await batchUpdateSlides(
+            requests: [
+                .init(
+                    updateTextStyle:
+                        .init(
+                            fields: "*",
+                            objectId: id,
+                            style: .init(
+                                bold: true,
+                                fontSize: .init(magnitude: 30, unit: .pt)
+                            ),
+                            textRange: .init(_type: .all)
+                        ))
+            ])
     }
 
     /// Insert Image to slides
-    /// - Parameters
+    /// - Parameters:
     ///  - slideId: the id of the slide to be used for adding image
     ///  - imageUrl: the url of the image to be added to the slide
-    ///  - size: the size of the image region, the size given needs to honur the position value
+    ///  - size: the size of the image region, the size given needs to honur the position value so that the content not to overflow
     ///  - position: the postion of the image region
     /// - Throws: GoogleSheetsError if the operation fails
     /// - Returns: Operation status
