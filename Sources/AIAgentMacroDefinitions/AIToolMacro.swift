@@ -111,9 +111,17 @@ public struct AIToolMacro: ExtensionMacro {
             let paramCasts = params.enumerated().map { idx, param in
                 let type = param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
                 let label = param.firstName.text
-                return
-                    "let data = args[\"\(label)\"], let \(label) = try? JSONDecoder().decode(\(type).self, from: data)"
-            }.joined(separator: ",\n")
+                let isOptional = type.hasSuffix("?")
+                if isOptional {
+                    // Optional type: allow missing data
+                    return
+                        "let \(label): \(type) = args[\"\(label)\"].flatMap { try? JSONDecoder().decode(\(type.replacingOccurrences(of: "?", with: "")).self, from: $0) }"
+                } else {
+                    // Non-optional type: require data
+                    return
+                        "let \(label) = try JSONDecoder().decode(\(type).self, from: args[\"\(label)\"]!)"
+                }
+            }.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: "\n")
             let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
             let tryKeyword = function.isThrowingFunction ? "try " : ""
             let throwsKeyword = function.isThrowingFunction ? "throws " : ""
@@ -125,7 +133,7 @@ public struct AIToolMacro: ExtensionMacro {
                 params.isEmpty
                 ? ""
                 : """
-                guard \(paramCasts) else { return nil }
+                \(paramCasts)
                 """
             let callArgs = params.isEmpty ? "" : paramNames
             return

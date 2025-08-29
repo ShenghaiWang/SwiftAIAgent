@@ -35,7 +35,7 @@ public struct GoogleSlides: Sendable {
     /// Update Google Slides
     /// - Parameters:
     ///   - requests:The requests of update Google slides
-    /// - Throws: GoogleSheetsError if the operation fails
+    /// - Throws: Error if the operation fails
     private func batchUpdateSlides(requests: [Components.Schemas.Request]) async throws -> String {
         _ = try await googleSlidesClient.slides_presentations_batchUpdate(
             presentationId: presentationId,
@@ -61,20 +61,24 @@ public struct GoogleSlides: Sendable {
     /// - Parameters:
     ///  - slideId: the id of the slide to be used for adding text
     ///  - text: the text to be added to the slide
-    ///  - isTitle: `0` or `1`, `1` if the text is a title
+    ///  - fontSettings: font settings
     ///  - size: the size of the text region, the size given needs to honur the position value so that the content not to overflow
     ///  - position: the postion of the text region
+    ///  - foregroundColor: the foregroundColor of the text
+    ///  - backgroundColor: the backgroundColor of the text
     /// - Throws: GoogleSheetsError if the operation fails
     /// - Returns: Operation status
     func insertTextToSlide(
         slideId: String,
         text: String,
-        isTitle: Int = 0,  // use `Int` type just to tolerate LLM. It's more reliable to use 0/1 for bool values
+        fontSettings: FontSettings?,
         size: Size,
         position: Position,
+        foregroundColor: RgbColor?,
+        backgroundColor: RgbColor?,
     ) async throws -> String {
         let id = UUID().uuidString
-        let result = try await batchUpdateSlides(
+        var result = try await batchUpdateSlides(
             requests: [
                 .init(
                     createShape:
@@ -91,21 +95,25 @@ public struct GoogleSlides: Sendable {
                             objectId: id,
                             text: text)),
             ])
-        guard isTitle == 1 else { return result }
-        return try await batchUpdateSlides(
-            requests: [
-                .init(
-                    updateTextStyle:
-                        .init(
-                            fields: "*",
-                            objectId: id,
-                            style: .init(
-                                bold: true,
-                                fontSize: .init(magnitude: 30, unit: .pt)
-                            ),
-                            textRange: .init(_type: .all)
-                        ))
-            ])
+        if let fontSettings {
+            result = try await batchUpdateSlides(
+                requests: [
+                    .init(
+                        updateTextStyle:
+                            .init(
+                                fields: "*",
+                                objectId: id,
+                                style: .init(
+                                    bold: fontSettings.bold == 1,
+                                    fontSize: .init(magnitude: fontSettings.fontSize, unit: .pt),
+                                    foregroundColor: foregroundColor?.color,
+                                ),
+                                textRange: .init(_type: .all)
+                            ))
+                ])
+        }
+
+        return result
     }
 
     /// Insert Image to slides
@@ -148,5 +156,11 @@ extension Components.Schemas.PageElementProperties {
                 unit: .pt
             )
         )
+    }
+}
+
+private extension RgbColor {
+    var color: Components.Schemas.OptionalColor {
+        .init(opaqueColor: .init(rgbColor: .init(blue: blue, green: green, red: red)))
     }
 }

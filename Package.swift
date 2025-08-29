@@ -42,6 +42,7 @@ let package = Package(
                 "GeminiSDK",
                 .product(name: "GoogleSheetsSDK", package: "GoogleSwiftSDK"),
                 .product(name: "GoogleSlidesSDK", package: "GoogleSwiftSDK"),
+                .product(name: "GoogleDocsSDK", package: "GoogleSwiftSDK"),
                 .product(name: "SwiftSoup", package: "SwiftSoup"),
             ]),
         .target(

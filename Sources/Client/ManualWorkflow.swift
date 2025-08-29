@@ -5,9 +5,7 @@ import SwiftAIAgent
 
 struct ManualFlow {
     static func run() async throws {
-        let gemini = GeminiSDK(
-            model: geminiModel,
-            apiKey: geminiAPIKey)
+        let gemini = GeminiSDK(model: geminiModel, apiKey: geminiAPIKey)
 
         let context = AIAgentContext(
             """

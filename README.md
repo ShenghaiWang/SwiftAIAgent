@@ -21,50 +21,30 @@ try await autoWorkflow.run()
 
 The AI model figures out what's the best to do for the goal. It only support sequence flow at the moment in auto mode.
 
-#### What this can do depends on the tools/mcp servers we configure, for example:
+#### What this can do depends on the tools/mcp servers we configure. For example, it can do the following(Please refer to the code examples in Client target):
 ```swift
-var goal: String {
-    switch self {
-    case .summariseAIHistory:
-        """
-        - Summarise AI history
-        - gemerate an image for the article
-        - save it in a markdow file 
-        """
-    case .summariseMeetingWithImage:
-        """
-        - Provide a summary of the most recent Trump-Putin meeting.
-        - accompanied by a political cartoon.
-        - Save it in a markdown file.
-        """
-    case .latestNewsInSydney:
-        """
-        - Latest News in Sydney (Past 24 Hours)
-        - Save it in a markdown file.
-        """
-    case .ceativeWriting:
-        """
-        - write an emotional story filled with dramatic moments, 
-        - exploring the relationship between a pet and its owner.
-        - save it in a markdown file
-        """
-    case .saveSearchResultToGoogleSheets:
-        """
-        - search the top 10 web pages that are about AI Coding practice
-        - save the title and url of the webpage to the google sheet.
-        """
-    case .tripPlanning:
-        """
-        - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
-        - save it in a markdown file
-        """
-    case .getGitHubRepotags:
-        """
-        - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
-        - save it in a markdown file
-        """
-    }
-}     
+    enum Example {
+        /// Generate scientific article
+        case summariseAIHistory
+        /// Creative writing
+        case ceativeWriting
+        /// Summarise political event
+        case summariseMeetingWithImage
+        /// Search latest news
+        case latestNewsInSydney
+        /// Search and save results to GoogleSheets
+        case saveSearchResultToGoogleSheets
+        /// Plan a trip using search tools
+        case tripPlanning
+        /// Demo of using MCP Servers
+        case getGitHubRepoTags
+        /// Add image, text to Google Slides
+        case addImageAndTextToSlides
+        /// Auto generate Google slides for content
+        case autoSlides
+        /// Create Google docs
+        case autoDocs
+   }     
 ```
 
 You can also check out [this website](https://deepresearch.timwang.au), which is built on top of this agent framework.

@@ -203,7 +203,7 @@ public final actor AIAgent: Sendable {
                             """
                             <Result_of_calling_function_\(toolCallingValue.name)>
                             <args>\(toolCallingValue.argsString)</args>
-                            \(callResult ?? "")
+                            <success_result>\(callResult ?? "")</success_result>
                             </Result_of_calling_function_\(toolCallingValue.name)>
                             """
                         ))
@@ -213,7 +213,7 @@ public final actor AIAgent: Sendable {
                             """
                             <Result_of_calling_function_\(toolCallingValue.name)>
                             <args>\(toolCallingValue.argsString)</args>
-                            \(error.localizedDescription)
+                            <error_result>\(error.localizedDescription)</error_result>
                             </Result_of_calling_function_\(toolCallingValue.name)>
                             """
                         ))
@@ -242,16 +242,21 @@ public final actor AIAgent: Sendable {
                         .mapValues {
                             (try? JSONDecoder().decode(Value.self, from: $0)) ?? .string("")
                         })
-                results.append(.text("<Result_of_calling_function_\(toolCallingValue.name)>"))
-                results.append(contentsOf: callResult.content.map(\.aiAgentOutput))
-                results.append(.text("</Result_of_calling_function_\(toolCallingValue.name)>"))
+                results.append(
+                    .text(
+                        """
+                        <Result_of_calling_function_\(toolCallingValue.name)>
+                        <success_result>\(callResult.content.map(\.aiAgentOutput))</success_result>
+                        </Result_of_calling_function_\(toolCallingValue.name)>
+                        """
+                    ))
             } catch {
                 results.append(
                     .text(
                         """
                         <Result_of_calling_function_\(toolCallingValue.name)>
                         <args>\(toolCallingValue.argsString)</args>
-                        \(error.localizedDescription)
+                        <error_result>\(error.localizedDescription)</error_result>
                         </Result_of_calling_function_\(toolCallingValue.name)>
                         """
                     ))

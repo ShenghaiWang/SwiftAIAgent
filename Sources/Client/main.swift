@@ -14,7 +14,7 @@ let geminiTTSModel = "gemini-2.5-flash-preview-tts"
 
 // Workflow example
 //try await ManualFlow.run()
-try await AutoWorkflow.run(goal: .autoSlides)
+try await AutoWorkflow.run(example: .autoDocs)
 
 // Gemini Speech Generation
 //try await GminiSpeechGeneration.run()

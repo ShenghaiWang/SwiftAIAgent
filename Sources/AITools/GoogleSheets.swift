@@ -19,7 +19,7 @@ public struct GoogleSheets: Sendable {
     ///   - values: 2D array of values to append
     ///   - range: The A1 notation range to append to
     /// - Returns: AppendValuesResponse containing append information
-    /// - Throws: GoogleSheetsError if the operation fails
+    /// - Throws: Error if the operation fails
     func appendToRange(values: [[String]], range: String) async throws {
         _ = try await googleSheetsClient.sheets_spreadsheets_values_append(
             spreadsheetId: sheetId,
