@@ -25,6 +25,8 @@ struct AutoWorkflow {
         case autoSlides
         /// Create Google docs
         case autoDocs
+        /// Search flights
+        case searchFlights
 
         var goal: String {
             switch self {
@@ -100,6 +102,12 @@ struct AutoWorkflow {
                 <title>NHS to trial AI tool that speeds up hospital discharges (The Guardian)</title>
                 The NHS is piloting an AI tool at Chelsea and Westminster NHS trust to accelerate hospital discharges by automating the completion of patient discharge documents. This initiative aims to reduce paperwork for doctors, free up beds, and ultimately cut patient waiting times, demonstrating AI's application in improving public services.
                 """
+            case .searchFlights:
+                """
+                - Search cheapest flight from Sydney to New York in December
+                - Save it in a markdown file
+                - Save it to Google Docs and format it properly
+                """
             }
         }
 
@@ -128,10 +136,12 @@ struct AutoWorkflow {
             let googleDocsTool = try GoogleDocs(
                 serviceAccount: googleServiceAccount, documentId: googleDocumentId)
 
+            let dateTimeTool = DateTime()
+
             return switch self {
-            case .summariseAIHistory: [fileIO, googleSearch]
-            case .summariseMeetingWithImage: [fileIO, googleSearch, geminiImage]
-            case .latestNewsInSydney: [fileIO, googleSearch]
+            case .summariseAIHistory: [dateTimeTool, fileIO, googleSearch]
+            case .summariseMeetingWithImage: [dateTimeTool, fileIO, googleSearch, geminiImage]
+            case .latestNewsInSydney: [dateTimeTool, fileIO, googleSearch]
             case .ceativeWriting: [fileIO]
             case .saveSearchResultToGoogleSheets: [fileIO, googleSearch, googleSheetsTool]
             case .tripPlanning: [fileIO, googleSearch, fetchTool]
@@ -139,16 +149,32 @@ struct AutoWorkflow {
             case .addImageAndTextToSlides: [googleSlidesTool]
             case .autoSlides: [googleSlidesTool]
             case .autoDocs: [googleDocsTool]
+            case .searchFlights: [dateTimeTool, fileIO, googleDocsTool]
             }
         }
 
         func mcpServers() -> [MCPServer] {
-            if self == .getGitHubRepoTags {
-                let gitHubURL = URL(string: "https://api.githubcopilot.com/mcp/")!
-                let gitHubToken = ProcessInfo.processInfo.environment["GitHubToken"] ?? ""
-                return [.http(url: gitHubURL, token: gitHubToken)]
+            switch self {
+            case .getGitHubRepoTags:
+                [
+                    .http(
+                        url: URL(string: "https://api.githubcopilot.com/mcp/")!,
+                        token: ProcessInfo.processInfo.environment["GitHubToken"] ?? "",
+                        description:
+                            "GitHub MCP Server, it can read repositories and code files, manage issues and PRs, analyze code, and automate workflows etc."
+                    )
+                ]
+            case .searchFlights:
+                [
+                    .http(
+                        url: URL(string: "http://mcp.kiwi.com/")!,
+                        token: nil,
+                        description:
+                            "KiWi flight search MCP Server. It can search all the information about flight tickets"
+                    )
+                ]
+            @unknown default: []
             }
-            return []
         }
     }
     let model: AIAgentModel

@@ -8,14 +8,23 @@ import MCP
 #endif
 
 public enum MCPServer: Sendable {
-    case stdio(command: String, args: [String])
-    case http(url: URL, token: String?)
+    case stdio(command: String, args: [String], description: String)
+    case http(url: URL, token: String?, description: String)
+
+    public var capabilityDescription: String {
+        switch self {
+        case let .stdio(_, _, description):
+            return description
+        case let .http(_, _, description):
+            return description
+        }
+    }
 }
 
 extension MCPServer {
     private func transport() async throws -> Transport {
         switch self {
-        case let .stdio(command, args):
+        case let .stdio(command, args, _):
             let process = Process()
             process.executableURL = URL(fileURLWithPath: command)  // Make sure uvx is available
             process.arguments = args
@@ -31,7 +40,7 @@ extension MCPServer {
                 output: FileDescriptor(rawValue: inputPipe.fileHandleForWriting.fileDescriptor),
                 logger: logger
             )
-        case let .http(url, token):
+        case let .http(url, token, _):
             return HTTPClientTransport(
                 endpoint: url,
                 streaming: true

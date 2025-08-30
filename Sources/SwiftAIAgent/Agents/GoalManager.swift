@@ -37,7 +37,8 @@ public actor GoalManager {
         You can also assign the following tools to agents if needed.
         There might be multiple tools that can achive the same goal, 
         use your best judgement to assign the best suitable tools to the agents.
-        <avaialbleTools>\(tools.toolDefinitions.joined(separator: ","))</avaialbleTools>
+        <avaialbleTools>\(tools.toolDefinitions.joined(separator: "\n"))</avaialbleTools>
+        <avaialbleMCPServerTools>\(mcpServers.map(\.capabilityDescription).joined(separator: "\n"))</avaialbleMCPServerTools>
         """
     }
 

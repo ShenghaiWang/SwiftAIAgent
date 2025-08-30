@@ -44,6 +44,8 @@ The AI model figures out what's the best to do for the goal. It only support seq
         case autoSlides
         /// Create Google docs
         case autoDocs
+        /// Search flights
+        case searchFlights
    }     
 ```
 
