@@ -60,9 +60,8 @@ struct AutoWorkflow {
                 """
             case .autoSlides:
                 """
-                based on the following content to create a Google slides
+                Create Google slides based on the following content
                 Please make the layout more easy to follow and beautiful
-                Make title in deep blue color
                 Do it step by step
                 No need of images for now as Google requires image url and we don't support it yet now.
                 <Content>

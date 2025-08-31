@@ -37,11 +37,11 @@ public struct GoogleSlides: Sendable {
     ///   - requests:The requests of update Google slides
     /// - Throws: Error if the operation fails
     private func batchUpdateSlides(requests: [Components.Schemas.Request]) async throws -> String {
-        _ = try await googleSlidesClient.slides_presentations_batchUpdate(
+        let result = try await googleSlidesClient.slides_presentations_batchUpdate(
             presentationId: presentationId,
             requests: requests
         )
-        return "Successfully finished"  // Ignore error for now
+        return "\(result)"  // Ignore error for now
     }
 
     /// Create a new slide in the current slide
@@ -96,7 +96,7 @@ public struct GoogleSlides: Sendable {
                             text: text)),
             ])
         if let fontSettings {
-            result = try await batchUpdateSlides(
+            result += try await batchUpdateSlides(
                 requests: [
                     .init(
                         updateTextStyle:
@@ -112,7 +112,20 @@ public struct GoogleSlides: Sendable {
                             ))
                 ])
         }
-
+        result += try await batchUpdateSlides(requests: [
+            .init(
+                updateShapeProperties:
+                    .init(
+                        fields: "autofit.autofitType",
+                        objectId: id,
+                        shapeProperties: .init(
+                            autofit: .init(
+                                autofitType: Components.Schemas.Autofit.AutofitTypePayload.none
+                            )
+                        ),
+                    )
+            )
+        ])
         return result
     }
 
