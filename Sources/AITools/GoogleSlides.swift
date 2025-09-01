@@ -1,6 +1,7 @@
 import GoogleSlidesSDK
 import Foundation
 import AIAgentMacros
+import GoogleAPITokenManager
 
 @AITool
 public struct GoogleSlides: Sendable {
@@ -22,14 +23,34 @@ public struct GoogleSlides: Sendable {
         let y: Double
     }
 
-    let serviceAccount: String
     let presentationId: String
     private let googleSlidesClient: Client
 
     public init(serviceAccount: String, presentationId: String) throws {
-        self.serviceAccount = serviceAccount
         self.presentationId = presentationId
         self.googleSlidesClient = try Client(accountServiceFile: serviceAccount)
+    }
+
+    public init(clientId: String, clientSecret: String, presentationId: String) async throws {
+        self.presentationId = presentationId
+        let googleOAuth2TokenManager = GoogleOAuth2TokenManager(
+            clientId: clientId,
+            clientSecret: clientSecret,
+            redirectURI: "http://localhost",
+            tokenStorage: InMemoeryTokenStorage())
+        let oauth = await googleOAuth2TokenManager.buildAuthorizationURL(
+            scopes: Client.oauthScopes, usePKCE: true)
+        print(oauth.url.absoluteString)
+        guard let authCode = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines),
+            !authCode.isEmpty
+        else {
+            fatalError("❌ No authorization code provided")
+        }
+        let result = try await googleOAuth2TokenManager.exchangeAuthorizationCode(
+            authCode,
+            pkceParameters: oauth.pkceParameters)
+        print(result)
+        self.googleSlidesClient = try Client(tokenManager: googleOAuth2TokenManager)
     }
 
     /// Update Google Slides

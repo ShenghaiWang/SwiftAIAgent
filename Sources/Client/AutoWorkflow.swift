@@ -110,7 +110,7 @@ struct AutoWorkflow {
             }
         }
 
-        func tools() throws -> [any AIAgentTool] {
+        func tools() async throws -> [any AIAgentTool] {
             let baseFolder = "."
             let fileIO = FileIO(baseFolder: baseFolder)
 
@@ -122,6 +122,8 @@ struct AutoWorkflow {
             let googlePresentationId =
                 ProcessInfo.processInfo.environment["Google_Presentation_ID"] ?? ""
             let googleDocumentId = ProcessInfo.processInfo.environment["Google_Document_ID"] ?? ""
+            let clientId = ProcessInfo.processInfo.environment["Google_client_ID"] ?? ""
+            let clientSecret = ProcessInfo.processInfo.environment["Google_ClientSecret"] ?? ""
 
             let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
             let key = ProcessInfo.processInfo.environment["key"] ?? ""
@@ -130,8 +132,13 @@ struct AutoWorkflow {
             let geminiImage = GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder)
             let googleSheetsTool = try GoogleSheets(
                 serviceAccount: googleServiceAccount, sheetId: googleSheetId)
-            let googleSlidesTool = try GoogleSlides(
-                serviceAccount: googleServiceAccount, presentationId: googlePresentationId)
+
+            let googleSlidesTool = try await GoogleSlides(
+                clientId: clientId,
+                clientSecret: clientSecret,
+                presentationId: googlePresentationId)
+            //            let googleSlidesTool = try await GoogleSlides(serviceAccount: googleServiceAccount,
+            //                                                          presentationId: googlePresentationId)
             let googleDocsTool = try GoogleDocs(
                 serviceAccount: googleServiceAccount, documentId: googleDocumentId)
 
@@ -189,7 +196,7 @@ struct AutoWorkflow {
     init(model: AIAgentModel, example: AutoWorkflow.Example) async throws {
         self.model = model
         self.managerAgent = try await AIAgent(title: "Manager", model: model)
-        self.goalManager = GoalManager(
+        self.goalManager = await GoalManager(
             goal: example.goal,
             managerAgent: managerAgent,
             models: [model],
