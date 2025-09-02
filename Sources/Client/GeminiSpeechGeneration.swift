@@ -5,12 +5,15 @@ enum GminiSpeechGeneration {
     static func run() async throws {
         let gemini = GeminiSDK(model: geminiTTSModel, apiKey: geminiAPIKey)
         let speechConfig = GeminiRequest.GenerationConfig.SpeechConfig(
-            voiceConfig: .init(prebuiltVoiceConfig: .init(voiceName: .Achernar)))
+            voiceConfig: .init(prebuiltVoiceConfig: .init(voiceName: .Achernar))
+        )
         let request = GeminiRequest(
             contents: [.init(parts: [.init(text: "Say cheerfully: Have a wonderful day!")])],
             generationConfig: .init(
                 responseModalities: [.audio],
-                speechConfig: speechConfig))
+                speechConfig: speechConfig
+            )
+        )
         let result = try await gemini.run(request: request)
         try result.forEach { output in
             if case let .audio(data) = output {

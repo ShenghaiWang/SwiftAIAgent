@@ -199,7 +199,8 @@ public struct GoogleSearch {
             200..<300 ~= statusCode
         else {
             throw Error.invalidResponse(
-                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
+                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode
+            )
         }
         return try JSONDecoder().decode(Response.self, from: data)
     }
@@ -247,13 +248,15 @@ extension GoogleSearch.Request {
             \.sort,
             \.num?.string,
             \.start?.string,
-        ].reduce(into: [String]()) { result, keyPath in
+        ]
+        .reduce(into: [String]()) { result, keyPath in
             if let propertyName = propertyName(of: self, keyPath: keyPath),
                 let value = self[keyPath: keyPath]
             {
                 result.append("\(propertyName)=\(value)")
             }
-        }.joined(separator: "&")
+        }
+        .joined(separator: "&")
     }
 }
 

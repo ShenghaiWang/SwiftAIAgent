@@ -17,6 +17,7 @@ struct FuncationCallingTests {
         #expect(
             functionDecl.parametersJsonSchema == """
                 {"properties":{"city":{"description":"The city","items":{"type":"string"},"type":"array"},"date":{"description":"The date","type":"string"}},"required":["city","date"],"type":"object"}
-                """)
+                """
+        )
     }
 }

@@ -25,7 +25,7 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0-latest"),
         .package(url: "https://github.com/apple/swift-system", from: "1.6.1"),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.10.1"),
-        .package(url: "https://github.com/ShenghaiWang/GoogleSwiftSDK.git", from: "1.0.1"),
+        .package(url: "https://github.com/ShenghaiWang/GoogleSwiftSDK.git", from: "1.0.2"),
         .package(url: "https://github.com/ShenghaiWang/GoogleAPITokenManager.git", from: "1.0.1"),
     ],
     targets: [
@@ -35,34 +35,41 @@ let package = Package(
                 "AIAgentMacros",
                 "GeminiSDK",
                 .product(name: "MCP", package: "swift-sdk"),
-            ]),
+            ]
+        ),
         .target(
             name: "AITools",
             dependencies: [
                 "AIAgentMacros",
                 "GeminiSDK",
+                .product(name: "GoogleCalendarSDK", package: "GoogleSwiftSDK"),
+                .product(name: "GoogleGmailSDK", package: "GoogleSwiftSDK"),
                 .product(name: "GoogleSheetsSDK", package: "GoogleSwiftSDK"),
                 .product(name: "GoogleSlidesSDK", package: "GoogleSwiftSDK"),
                 .product(name: "GoogleDocsSDK", package: "GoogleSwiftSDK"),
                 .product(name: "SwiftSoup", package: "SwiftSoup"),
                 .product(name: "GoogleAPITokenManager", package: "GoogleAPITokenManager"),
-            ]),
+            ]
+        ),
         .target(
             name: "GeminiSDK",
             dependencies: [
                 "AIAgentMacros"
-            ]),
+            ]
+        ),
         .macro(
             name: "AIAgentMacroDefinitions",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-            ]),
+            ]
+        ),
         .target(
             name: "AIAgentMacros",
             dependencies: [
                 "AIAgentMacroDefinitions"
-            ]),
+            ]
+        ),
         .testTarget(
             name: "AIAgentMacrosTests",
             dependencies: [
@@ -70,24 +77,28 @@ let package = Package(
                 "AIAgentMacroDefinitions",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
-            ]),
+            ]
+        ),
         .testTarget(
             name: "SwiftAIAgentTests",
             dependencies: [
                 "SwiftAIAgent"
-            ]),
+            ]
+        ),
         .testTarget(
             name: "GeminiSDKTests",
             dependencies: [
                 "AIAgentMacros",
                 "GeminiSDK",
-            ]),
+            ]
+        ),
         .testTarget(
             name: "AIToolsTests",
             dependencies: [
                 "AIAgentMacros",
                 "AITools",
-            ]),
+            ]
+        ),
         .executableTarget(
             name: "Client",
             dependencies: [
@@ -97,6 +108,7 @@ let package = Package(
                 "AITools",
                 .product(name: "SystemPackage", package: "swift-system"),
                 .product(name: "MCP", package: "swift-sdk"),
-            ]),
+            ]
+        ),
     ]
 )

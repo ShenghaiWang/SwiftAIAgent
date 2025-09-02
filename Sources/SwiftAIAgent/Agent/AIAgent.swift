@@ -51,7 +51,8 @@ public final actor AIAgent: Sendable {
                 into: [UUID: Client](),
                 { result, client in
                     result[UUID()] = client
-                })
+                }
+            )
         for (key, client) in mcpClients {
             var allTools: [MCP.Tool] = []
             var (tools, nextCursor) = try await client.listTools()
@@ -83,8 +84,11 @@ public final actor AIAgent: Sendable {
         inlineData: InlineData? = nil
     ) async throws -> [AIAgentOutput] {
         try await runInternal(
-            prompt: prompt, outputSchema: outputSchema, modalities: modalities,
-            inlineData: inlineData)
+            prompt: prompt,
+            outputSchema: outputSchema,
+            modalities: modalities,
+            inlineData: inlineData
+        )
     }
 
     /// Run agent for the task with the prompt
@@ -101,8 +105,11 @@ public final actor AIAgent: Sendable {
         inlineData: InlineData? = nil
     ) async throws -> [AIAgentOutput] {
         try await runInternal(
-            prompt: prompt, outputSchema: outputSchema, modalities: modalities,
-            inlineData: inlineData)
+            prompt: prompt,
+            outputSchema: outputSchema,
+            modalities: modalities,
+            inlineData: inlineData
+        )
     }
 
     private func runInternal<T>(
@@ -121,7 +128,8 @@ public final actor AIAgent: Sendable {
                     toolSchemas: toolDefinitions,
                     modalities: modalities,
                     inlineData: inlineData,
-                    temperature: temperature)
+                    temperature: temperature
+                )
             } else {
                 try await model.run(
                     prompt: combinedPrompt,
@@ -129,13 +137,15 @@ public final actor AIAgent: Sendable {
                     toolSchemas: toolDefinitions,
                     modalities: modalities,
                     inlineData: inlineData,
-                    temperature: temperature)
+                    temperature: temperature
+                )
             }
         await Runtime.shared.set(output: result, for: id, title: title)
         let allFunctionCalls = result.allFunctionCalls
         if !allFunctionCalls.isEmpty {
             logger.debug(
-                "\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n")
+                "\n\(description)\n===Output before calling tools===\n\(result.allTexts)\n"
+            )
             logger.debug(
                 "\n\(description)\n===Calling tools===\n\(allFunctionCalls.joined(separator: ";"))\n"
             )
@@ -151,13 +161,15 @@ public final actor AIAgent: Sendable {
             await Runtime.shared.set(output: result, for: id, title: title)
             let combinedPrompt = await combined(prompt: "\(prompt) \(stopTooCallInstruction)")
             logger.debug(
-                "\n\(description)\n===Re-run agent after calling tools===\n\(result.allTexts)\n")
+                "\n\(description)\n===Re-run agent after calling tools===\n\(result.allTexts)\n"
+            )
             try await Task.sleep(for: .seconds(1))
             result += try await runInternal(
                 prompt: combinedPrompt,
                 outputSchema: outputSchema,
                 modalities: modalities,
-                inlineData: inlineData)
+                inlineData: inlineData
+            )
         }
         await Runtime.shared.set(output: result, for: id, title: title)
         logger.debug("\n\(description)\n===Output===\n\(result.allTexts)\n")
@@ -197,7 +209,9 @@ public final actor AIAgent: Sendable {
             for tool in tools {
                 do {
                     let callResult = try await tool.call(
-                        toolCallingValue.name, args: toolCallingValue.args)
+                        toolCallingValue.name,
+                        args: toolCallingValue.args
+                    )
                     results.append(
                         .text(
                             """
@@ -206,7 +220,8 @@ public final actor AIAgent: Sendable {
                             <success_result>\(callResult ?? "")</success_result>
                             </Result_of_calling_function_\(toolCallingValue.name)>
                             """
-                        ))
+                        )
+                    )
                 } catch {
                     results.append(
                         .text(
@@ -216,7 +231,8 @@ public final actor AIAgent: Sendable {
                             <error_result>\(error.localizedDescription)</error_result>
                             </Result_of_calling_function_\(toolCallingValue.name)>
                             """
-                        ))
+                        )
+                    )
                 }
             }
         }
@@ -228,9 +244,12 @@ public final actor AIAgent: Sendable {
         var results: [AIAgentOutput] = []
         for toolCallingValue in toolCallingValues {
             guard
-                let clientKey = mcpTools.filter({
-                    $0.value.compactMap(\.name).contains(toolCallingValue.name)
-                }).first?.key,
+                let clientKey =
+                    mcpTools.filter({
+                        $0.value.compactMap(\.name).contains(toolCallingValue.name)
+                    })
+                    .first?
+                    .key,
                 let mcpClient = mcpClients[clientKey]
             else {
                 continue
@@ -241,7 +260,8 @@ public final actor AIAgent: Sendable {
                     arguments: toolCallingValue.args
                         .mapValues {
                             (try? JSONDecoder().decode(Value.self, from: $0)) ?? .string("")
-                        })
+                        }
+                )
                 results.append(
                     .text(
                         """
@@ -249,7 +269,8 @@ public final actor AIAgent: Sendable {
                         <success_result>\(callResult.content.map(\.aiAgentOutput))</success_result>
                         </Result_of_calling_function_\(toolCallingValue.name)>
                         """
-                    ))
+                    )
+                )
             } catch {
                 results.append(
                     .text(
@@ -259,7 +280,8 @@ public final actor AIAgent: Sendable {
                         <error_result>\(error.localizedDescription)</error_result>
                         </Result_of_calling_function_\(toolCallingValue.name)>
                         """
-                    ))
+                    )
+                )
             }
         }
         return results

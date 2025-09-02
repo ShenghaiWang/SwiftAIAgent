@@ -13,7 +13,7 @@ struct AsAsyncSequence<S: Sequence>: AsyncSequence {
         var iterator: S.Iterator
 
         mutating func next() async -> S.Element? {
-            return iterator.next()
+            iterator.next()
         }
     }
 

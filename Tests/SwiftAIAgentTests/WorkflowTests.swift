@@ -15,7 +15,8 @@ struct WorkflowTests {
             result.allTexts.joined(separator: "\n") == """
                 Agent 1:
                 <result_of_the_previous_step>hello world</result_of_the_previous_step>
-                """)
+                """
+        )
     }
 
     @Test
@@ -30,7 +31,8 @@ struct WorkflowTests {
                 Agent 2:
                 <result_of_the_previous_step>Agent 1:
                 <result_of_the_previous_step>hello world</result_of_the_previous_step></result_of_the_previous_step>
-                """)
+                """
+        )
     }
 
     @Test
@@ -65,7 +67,9 @@ struct WorkflowTests {
         let stepTrue = Workflow.Step.conditional(
             { result in
                 condition
-            }, .single(agent1))
+            },
+            .single(agent1)
+        )
         let workflowTrue = Workflow(step: stepTrue)
         let result = try await workflowTrue.run(prompt: "hello world")
         #expect(result.allTexts.joined(separator: "\n") == output)

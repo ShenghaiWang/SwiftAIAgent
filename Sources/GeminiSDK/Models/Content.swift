@@ -48,7 +48,10 @@ public struct Content: Codable {
             let scheduling: Scheduling
 
             public init(
-                id: String, name: String, response: String, willContinue: Bool,
+                id: String,
+                name: String,
+                response: String,
+                willContinue: Bool,
                 scheduling: Scheduling
             ) {
                 self.id = id
@@ -115,11 +118,17 @@ extension Content.Part: Codable {
         inlineData = try? container.decodeIfPresent(InlineData.self, forKey: .inlineData)
         functionCall = nil
         functionResponse = try? container.decodeIfPresent(
-            FunctionResponse.self, forKey: .functionResponse)
+            FunctionResponse.self,
+            forKey: .functionResponse
+        )
         fileData = try? container.decodeIfPresent(FileData.self, forKey: .fileData)
         executableCode = try? container.decodeIfPresent(
-            ExecutableCode.self, forKey: .executableCode)
+            ExecutableCode.self,
+            forKey: .executableCode
+        )
         codeExecutionResult = try? container.decodeIfPresent(
-            CodeExecutionResult.self, forKey: .codeExecutionResult)
+            CodeExecutionResult.self,
+            forKey: .codeExecutionResult
+        )
     }
 }

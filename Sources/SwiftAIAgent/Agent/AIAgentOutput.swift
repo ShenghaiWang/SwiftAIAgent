@@ -13,11 +13,11 @@ public enum AIAgentOutput: Sendable {
 extension AIAgentOutput {
     public var output: String {
         switch self {
-        case let .text(result): result
-        case let .functionCalls(result): result.joined(separator: "||")
-        case let .strongTypedValue(result): "\(result)"
-        case .image: "AI generated image"
-        case .audio: "AI generated audio"
+            case let .text(result): result
+            case let .functionCalls(result): result.joined(separator: "||")
+            case let .strongTypedValue(result): "\(result)"
+            case .image: "AI generated image"
+            case .audio: "AI generated audio"
         }
     }
 }

@@ -3,22 +3,50 @@ import Foundation
 import AIAgentMacros
 
 @AITool
-public struct GoogleDocs {
-    let serviceAccount: String
+public struct GoogleDocs: Sendable, GoogleClient {
     let documentId: String
     let googleDocsClient: Client
 
+    /// Initializes a `GoogleDocs` client using a service account.
+    ///
+    /// - Parameters:
+    ///   - serviceAccount: The path or identifier for the service account credentials.
+    ///   - documentId: The ID of the Google Docs document to operate on.
+    /// - Throws: An error if the client could not be initialized.
     public init(serviceAccount: String, documentId: String) throws {
-        self.serviceAccount = serviceAccount
         self.documentId = documentId
-        self.googleDocsClient = try Client(accountServiceFile: serviceAccount)
+        self.googleDocsClient = try Self.client(serviceAccount: serviceAccount)
+    }
+
+    /// Initializes a `GoogleDocs` client using OAuth credentials.
+    ///
+    /// - Parameters:
+    ///   - clientId: The OAuth client ID.
+    ///   - clientSecret: The OAuth client secret.
+    ///   - redirectURI: The redirect URI for OAuth authentication. Defaults to `http://localhost`.
+    ///   - documentId: The ID of the Google Docs document to operate on.
+    /// - Throws: An error if the client could not be initialized.
+    public init(
+        clientId: String,
+        clientSecret: String,
+        redirectURI: String = "http://localhost",
+        documentId: String,
+    ) async throws {
+        self.documentId = documentId
+        self.googleDocsClient = try await Self.client(
+            clientId: clientId,
+            clientSecret: clientSecret,
+            redirectURI: redirectURI
+        )
     }
 
     // Update Google Slides
     /// - Parameters:
     ///   - requests:The requests of update Google slides
     /// - Throws: Error if the operation fails
-    private func docs_documents_batchUpdate(requests: [Components.Schemas.Request]) async throws
+    private func docs_documents_batchUpdate(
+        requests: [Components.Schemas.Request]
+    ) async throws
         -> String
     {
         _ = try await googleDocsClient.docs_documents_batchUpdate(
@@ -58,7 +86,8 @@ public struct GoogleDocs {
                 fields: "*",
                 range: .init(
                     endIndex: document.body?.content?.last?.endIndex ?? 0,
-                    startIndex: document.body?.content?.last?.startIndex ?? 0),
+                    startIndex: document.body?.content?.last?.startIndex ?? 0
+                ),
                 textStyle: .init(
                     backgroundColor: backgroundColor?.color,
                     bold: fontSettings?.bold == 1,
@@ -68,7 +97,9 @@ public struct GoogleDocs {
                     strikethrough: fontSettings?.strikethrough == 1,
                     underline: fontSettings?.underline == 1,
                     weightedFontFamily: .init(
-                        fontFamily: fontSettings?.fontFamily, weight: fontSettings?.fontWeight)
+                        fontFamily: fontSettings?.fontFamily,
+                        weight: fontSettings?.fontWeight
+                    )
                 )
             )
         )
@@ -79,6 +110,7 @@ public struct GoogleDocs {
 }
 
 private extension RgbColor {
+    /// Converts the `RgbColor` to a `Components.Schemas.OptionalColor` for use in Google Docs API requests.
     var color: Components.Schemas.OptionalColor {
         .init(color: .init(rgbColor: .init(blue: blue, green: green, red: red)))
     }

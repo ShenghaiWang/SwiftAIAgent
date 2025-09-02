@@ -27,95 +27,105 @@ struct AutoWorkflow {
         case autoDocs
         /// Search flights
         case searchFlights
+        /// Draft an email in Gmail
+        case draftEmail
+        /// Create Calendar Event
+        case createCalendarEvent
 
         var goal: String {
             switch self {
-            case .summariseAIHistory:
-                """
-                - Summarise AI history
-                - gemerate an image for the article
-                - save it in a markdow file 
-                """
-            case .summariseMeetingWithImage:
-                """
-                - Summarise the meeting Trump and Putin have had in Alaska on 15 August 2025.
-                - accompanied by a political cartoon.
-                - Save it in a markdown file.
-                """
-            case .latestNewsInSydney:
-                """
-                - Latest News in Sydney (Past 24 Hours)
-                - Save it in a markdown file.
-                """
-            case .ceativeWriting:
-                """
-                - write an emotional story filled with dramatic moments, 
-                - exploring the relationship between a pet and its owner.
-                - save it in a markdown file
-                """
-            case .saveSearchResultToGoogleSheets:
-                """
-                - search top 10 web pages that are about AI Coding practice
-                - save the title and url of the webpage to the google sheet.
-                """
-            case .autoSlides:
-                """
-                Create Google slides based on the following content
-                Please make the layout more easy to follow and beautiful
-                Do it step by step
-                No need of images for now as Google requires image url and we don't support it yet now.
-                <Content>
-                **AI-generated models shake up the fashion industry and raise concerns (PBS NewsHour):**
-                An article from PBS NewsHour discusses how AI-generated models are significantly impacting the fashion industry, from virtual fitting rooms to AI avatars in marketing. This shift is disrupting traditional workflows and raising concerns about potential job losses and other implications within the industry.
+                case .summariseAIHistory:
+                    """
+                    - Summarise AI history
+                    - gemerate an image for the article
+                    - save it in a markdow file 
+                    """
+                case .summariseMeetingWithImage:
+                    """
+                    - Summarise the meeting Trump and Putin have had in Alaska on 15 August 2025.
+                    - accompanied by a political cartoon.
+                    - Save it in a markdown file.
+                    """
+                case .latestNewsInSydney:
+                    """
+                    - Latest News in Sydney (Past 24 Hours)
+                    - Save it in a markdown file.
+                    """
+                case .ceativeWriting:
+                    """
+                    - write an emotional story filled with dramatic moments, 
+                    - exploring the relationship between a pet and its owner.
+                    - save it in a markdown file
+                    """
+                case .saveSearchResultToGoogleSheets:
+                    """
+                    - search top 10 web pages that are about AI Coding practice
+                    - save the title and url of the webpage to the google sheet.
+                    """
+                case .autoSlides:
+                    """
+                    Create Google slides based on the following content
+                    Please make the layout more easy to follow and beautiful
+                    Do it step by step
+                    No need of images for now as Google requires image url and we don't support it yet now.
+                    <Content>
+                    **AI-generated models shake up the fashion industry and raise concerns (PBS NewsHour):**
+                    An article from PBS NewsHour discusses how AI-generated models are significantly impacting the fashion industry, from virtual fitting rooms to AI avatars in marketing. This shift is disrupting traditional workflows and raising concerns about potential job losses and other implications within the industry.
 
-                **NHS to trial AI tool that speeds up hospital discharges (The Guardian):**
-                The NHS is piloting an AI tool at Chelsea and Westminster NHS trust to accelerate hospital discharges by automating the completion of patient discharge documents. This initiative aims to reduce paperwork for doctors, free up beds, and ultimately cut patient waiting times, demonstrating AI's application in improving public services.
+                    **NHS to trial AI tool that speeds up hospital discharges (The Guardian):**
+                    The NHS is piloting an AI tool at Chelsea and Westminster NHS trust to accelerate hospital discharges by automating the completion of patient discharge documents. This initiative aims to reduce paperwork for doctors, free up beds, and ultimately cut patient waiting times, demonstrating AI's application in improving public services.
 
-                **Catholic bioethics expert on AI: ‘It’s not too late to put the genie back in the bottle’ (Catholic News Agency):**
-                A Catholic bioethics expert, Charles Camosy, warns about the dangers of widespread AI adoption, echoing Pope Leo XIV's concerns about its potential negative impact on human development and the "loss of the sense of the human." Camosy highlights the worrying blurring of lines between human and chatbot interaction, stressing the need to maintain the distinction of human identity.
-                </Content>
-                """
-            case .addImageAndTextToSlides:
-                """
-                - Creates a slide in the Slides file
-                - add text `Text added by AI` to the slide as title
-                - add image https://deepresearch.timwang.au/results/F3275E05-7864-4115-AA82-060A393D437F.png to the slide
-                """
-            case .tripPlanning:
-                """
-                - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
-                - save it in a markdown file
-                """
-            case .getGitHubRepoTags:
-                """
-                - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
-                - save it in a markdown file
-                """
-            case .autoDocs:
-                """
-                Add the following content to the Google Docs document
-                <Content>
-                <title>AI-generated models shake up the fashion industry and raise concerns (PBS NewsHour)</title>
-                An article from PBS NewsHour discusses how AI-generated models are significantly impacting the fashion industry, from virtual fitting rooms to AI avatars in marketing. This shift is disrupting traditional workflows and raising concerns about potential job losses and other implications within the industry.
+                    **Catholic bioethics expert on AI: ‘It’s not too late to put the genie back in the bottle’ (Catholic News Agency):**
+                    A Catholic bioethics expert, Charles Camosy, warns about the dangers of widespread AI adoption, echoing Pope Leo XIV's concerns about its potential negative impact on human development and the "loss of the sense of the human." Camosy highlights the worrying blurring of lines between human and chatbot interaction, stressing the need to maintain the distinction of human identity.
+                    </Content>
+                    """
+                case .addImageAndTextToSlides:
+                    """
+                    - Creates a slide in the Slides file
+                    - add text `Text added by AI` to the slide as title
+                    - add image https://deepresearch.timwang.au/results/F3275E05-7864-4115-AA82-060A393D437F.png to the slide
+                    """
+                case .tripPlanning:
+                    """
+                    - Organize a 10-day journey to Japan in December for three people, aiming for a moderate budget.
+                    - save it in a markdown file
+                    """
+                case .getGitHubRepoTags:
+                    """
+                    - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
+                    - save it in a markdown file
+                    """
+                case .autoDocs:
+                    """
+                    Add the following content to the Google Docs document
+                    <Content>
+                    <title>AI-generated models shake up the fashion industry and raise concerns (PBS NewsHour)</title>
+                    An article from PBS NewsHour discusses how AI-generated models are significantly impacting the fashion industry, from virtual fitting rooms to AI avatars in marketing. This shift is disrupting traditional workflows and raising concerns about potential job losses and other implications within the industry.
 
-                <title>NHS to trial AI tool that speeds up hospital discharges (The Guardian)</title>
-                The NHS is piloting an AI tool at Chelsea and Westminster NHS trust to accelerate hospital discharges by automating the completion of patient discharge documents. This initiative aims to reduce paperwork for doctors, free up beds, and ultimately cut patient waiting times, demonstrating AI's application in improving public services.
-                """
-            case .searchFlights:
-                """
-                - Search cheapest flight from Sydney to New York in December
-                - Save it in a markdown file
-                - Save it to Google Docs and format it properly
-                """
+                    <title>NHS to trial AI tool that speeds up hospital discharges (The Guardian)</title>
+                    The NHS is piloting an AI tool at Chelsea and Westminster NHS trust to accelerate hospital discharges by automating the completion of patient discharge documents. This initiative aims to reduce paperwork for doctors, free up beds, and ultimately cut patient waiting times, demonstrating AI's application in improving public services.
+                    """
+                case .searchFlights:
+                    """
+                    - Search cheapest flight from Sydney to New York in December
+                    - Save it in a markdown file
+                    - Save it to Google Docs and format it properly
+                    """
+                case .draftEmail:
+                    """
+                    - Draft an email to Tim Wang(overocean@gmail.com) to 
+                    - ask the project progress of SwiftAIAgent
+                    """
+                case .createCalendarEvent:
+                    """
+                    - Arrange a half hour meeting with Tim Wang(tim.wang.au@gmail.com)
+                    - Tomorrow morning from 10am Sydney time to discuss SwiftAIAgent project
+                    """
             }
         }
 
         func tools() async throws -> [any AIAgentTool] {
             let baseFolder = "."
-            let fileIO = FileIO(baseFolder: baseFolder)
-
-            let fetchTool = Fetch()
-
             let googleServiceAccount =
                 ProcessInfo.processInfo.environment["Google_Service_Account"] ?? ""
             let googleSheetId = ProcessInfo.processInfo.environment["Google_Sheet_ID"] ?? ""
@@ -124,62 +134,96 @@ struct AutoWorkflow {
             let googleDocumentId = ProcessInfo.processInfo.environment["Google_Document_ID"] ?? ""
             let clientId = ProcessInfo.processInfo.environment["Google_client_ID"] ?? ""
             let clientSecret = ProcessInfo.processInfo.environment["Google_ClientSecret"] ?? ""
+            let calendarId = ProcessInfo.processInfo.environment["Google_CalendarID"] ?? ""
 
             let cx = ProcessInfo.processInfo.environment["cx"] ?? ""
             let key = ProcessInfo.processInfo.environment["key"] ?? ""
-            let googleSearch = GoogleSearch(cx: cx, key: key)
-
-            let geminiImage = GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder)
-            let googleSheetsTool = try GoogleSheets(
-                serviceAccount: googleServiceAccount, sheetId: googleSheetId)
-
-            let googleSlidesTool = try await GoogleSlides(
-                clientId: clientId,
-                clientSecret: clientSecret,
-                presentationId: googlePresentationId)
-            //            let googleSlidesTool = try await GoogleSlides(serviceAccount: googleServiceAccount,
-            //                                                          presentationId: googlePresentationId)
-            let googleDocsTool = try GoogleDocs(
-                serviceAccount: googleServiceAccount, documentId: googleDocumentId)
-
-            let dateTimeTool = DateTime()
 
             return switch self {
-            case .summariseAIHistory: [dateTimeTool, fileIO, googleSearch]
-            case .summariseMeetingWithImage: [dateTimeTool, fileIO, googleSearch, geminiImage]
-            case .latestNewsInSydney: [dateTimeTool, fileIO, googleSearch]
-            case .ceativeWriting: [fileIO]
-            case .saveSearchResultToGoogleSheets: [fileIO, googleSearch, googleSheetsTool]
-            case .tripPlanning: [fileIO, googleSearch, fetchTool]
-            case .getGitHubRepoTags: []
-            case .addImageAndTextToSlides: [googleSlidesTool]
-            case .autoSlides: [googleSlidesTool]
-            case .autoDocs: [googleDocsTool]
-            case .searchFlights: [dateTimeTool, fileIO, googleDocsTool]
+                case .summariseAIHistory:
+                    [
+                        DateTime(),
+                        FileIO(baseFolder: baseFolder),
+                        GoogleSearch(cx: cx, key: key),
+                    ]
+                case .summariseMeetingWithImage:
+                    [
+                        DateTime(),
+                        FileIO(baseFolder: baseFolder),
+                        GoogleSearch(cx: cx, key: key),
+                        GeminiImage(apiKey: geminiAPIKey, baseFolder: baseFolder),
+                    ]
+                case .latestNewsInSydney:
+                    [
+                        DateTime(),
+                        FileIO(baseFolder: baseFolder),
+                        GoogleSearch(cx: cx, key: key),
+                    ]
+                case .ceativeWriting: [FileIO(baseFolder: baseFolder)]
+                case .saveSearchResultToGoogleSheets:
+                    [
+                        FileIO(baseFolder: baseFolder),
+                        GoogleSearch(cx: cx, key: key),
+                        try GoogleSheets(serviceAccount: googleServiceAccount, sheetId: googleSheetId),
+                    ]
+                case .tripPlanning:
+                    [
+                        FileIO(baseFolder: baseFolder),
+                        GoogleSearch(cx: cx, key: key),
+                        Fetch(),
+                    ]
+                case .getGitHubRepoTags: []
+                case .addImageAndTextToSlides:
+                    [
+                        try GoogleSlides(serviceAccount: googleServiceAccount, presentationId: googlePresentationId)
+                    ]
+                case .autoSlides:
+                    [
+                        try GoogleSlides(serviceAccount: googleServiceAccount, presentationId: googlePresentationId)
+                    ]
+                case .autoDocs:
+                    [
+                        try GoogleDocs(serviceAccount: googleServiceAccount, documentId: googleDocumentId)
+                    ]
+                case .searchFlights:
+                    [
+                        DateTime(),
+                        FileIO(baseFolder: baseFolder),
+                        try GoogleDocs(serviceAccount: googleServiceAccount, documentId: googleDocumentId),
+                    ]
+                case .draftEmail:
+                    [
+                        try await GoogleGmail(clientId: clientId, clientSecret: clientSecret)
+                    ]
+                case .createCalendarEvent:
+                    [
+                        DateTime(),
+                        try GoogleCalendar(serviceAccount: googleServiceAccount, calendarId: calendarId),
+                    ]
             }
         }
 
         func mcpServers() -> [MCPServer] {
             switch self {
-            case .getGitHubRepoTags:
-                [
-                    .http(
-                        url: URL(string: "https://api.githubcopilot.com/mcp/")!,
-                        token: ProcessInfo.processInfo.environment["GitHubToken"] ?? "",
-                        description:
-                            "GitHub MCP Server, it can read repositories and code files, manage issues and PRs, analyze code, and automate workflows etc."
-                    )
-                ]
-            case .searchFlights:
-                [
-                    .http(
-                        url: URL(string: "http://mcp.kiwi.com/")!,
-                        token: nil,
-                        description:
-                            "KiWi flight search MCP Server. It can search all the information about flight tickets"
-                    )
-                ]
-            @unknown default: []
+                case .getGitHubRepoTags:
+                    [
+                        .http(
+                            url: URL(string: "https://api.githubcopilot.com/mcp/")!,
+                            token: ProcessInfo.processInfo.environment["GitHubToken"] ?? "",
+                            description:
+                                "GitHub MCP Server, it can read repositories and code files, manage issues and PRs, analyze code, and automate workflows etc."
+                        )
+                    ]
+                case .searchFlights:
+                    [
+                        .http(
+                            url: URL(string: "http://mcp.kiwi.com/")!,
+                            token: nil,
+                            description:
+                                "KiWi flight search MCP Server. It can search all the information about flight tickets"
+                        )
+                    ]
+                @unknown default: []
             }
         }
     }
@@ -201,7 +245,8 @@ struct AutoWorkflow {
             managerAgent: managerAgent,
             models: [model],
             tools: try example.tools(),
-            mcpServers: example.mcpServers())
+            mcpServers: example.mcpServers()
+        )
     }
 
     func runInternal() async throws {
@@ -214,7 +259,8 @@ struct AutoWorkflow {
                     questions
                         .enumerated()
                         .map { "\($0 + 1): \($1)" }
-                        .joined(separator: "\n"))
+                        .joined(separator: "\n")
+                )
                 let clarifications = readLine()
                 await goalManager.set(clarifications: [clarifications ?? ""])
                 try await runInternal()

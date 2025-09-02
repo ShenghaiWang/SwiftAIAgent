@@ -1,10 +1,9 @@
 import GoogleSlidesSDK
 import Foundation
 import AIAgentMacros
-import GoogleAPITokenManager
 
 @AITool
-public struct GoogleSlides: Sendable {
+public struct GoogleSlides: Sendable, GoogleClient {
     /// Size of a rectengle
     @AIModelSchema
     struct Size {
@@ -26,37 +25,44 @@ public struct GoogleSlides: Sendable {
     let presentationId: String
     private let googleSlidesClient: Client
 
+    /// Initializes a `GoogleSlides` client using a service account.
+    ///
+    /// - Parameters:
+    ///   - serviceAccount: The path or identifier for the service account credentials.
+    ///   - presentationId: The ID of the Google Slides presentation to operate on.
+    /// - Throws: An error if the client could not be initialized.
     public init(serviceAccount: String, presentationId: String) throws {
         self.presentationId = presentationId
-        self.googleSlidesClient = try Client(accountServiceFile: serviceAccount)
+        self.googleSlidesClient = try Self.client(serviceAccount: serviceAccount)
     }
 
-    public init(clientId: String, clientSecret: String, presentationId: String) async throws {
+    /// Initializes a `GoogleSlides` client using OAuth credentials.
+    ///
+    /// - Parameters:
+    ///   - clientId: The OAuth client ID.
+    ///   - clientSecret: The OAuth client secret.
+    ///   - redirectURI: The redirect URI for OAuth authentication. Defaults to `http://localhost`.
+    ///   - presentationId: The ID of the Google Slides presentation to operate on.
+    /// - Throws: An error if the client could not be initialized.
+    public init(
+        clientId: String,
+        clientSecret: String,
+        redirectURI: String = "http://localhost",
+        presentationId: String,
+    ) async throws {
         self.presentationId = presentationId
-        let googleOAuth2TokenManager = GoogleOAuth2TokenManager(
+        self.googleSlidesClient = try await Self.client(
             clientId: clientId,
             clientSecret: clientSecret,
-            redirectURI: "http://localhost",
-            tokenStorage: InMemoeryTokenStorage())
-        let oauth = await googleOAuth2TokenManager.buildAuthorizationURL(
-            scopes: Client.oauthScopes, usePKCE: true)
-        print(oauth.url.absoluteString)
-        guard let authCode = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines),
-            !authCode.isEmpty
-        else {
-            fatalError("❌ No authorization code provided")
-        }
-        let result = try await googleOAuth2TokenManager.exchangeAuthorizationCode(
-            authCode,
-            pkceParameters: oauth.pkceParameters)
-        print(result)
-        self.googleSlidesClient = try Client(tokenManager: googleOAuth2TokenManager)
+            redirectURI: redirectURI
+        )
     }
 
-    /// Update Google Slides
-    /// - Parameters:
-    ///   - requests:The requests of update Google slides
-    /// - Throws: Error if the operation fails
+    /// Sends a batch update request to the Google Slides API for the specified presentation.
+    ///
+    /// - Parameter requests: The requests to apply to the Google Slides presentation.
+    /// - Returns: A string indicating the result of the operation.
+    /// - Throws: An error if the operation fails.
     private func batchUpdateSlides(requests: [Components.Schemas.Request]) async throws -> String {
         let result = try await googleSlidesClient.slides_presentations_batchUpdate(
             presentationId: presentationId,
@@ -65,11 +71,10 @@ public struct GoogleSlides: Sendable {
         return "\(result)"  // Ignore error for now
     }
 
-    /// Create a new slide in the current slide
-    /// - Parameters
-    ///  - request: the request to create a new slide
-    /// - Throws: GoogleSheetsError if the operation fails
-    /// - Returns: The ID of the newly created slide
+    /// Creates a new slide in the current presentation.
+    ///
+    /// - Returns: The ID of the newly created slide.
+    /// - Throws: An error if the operation fails.
     func creatANewSlide() async throws -> String {
         let id = UUID().uuidString
         _ = try await batchUpdateSlides(requests: [
@@ -78,17 +83,18 @@ public struct GoogleSlides: Sendable {
         return id
     }
 
-    /// Insert text to slides
+    /// Inserts text into a slide.
+    ///
     /// - Parameters:
-    ///  - slideId: the id of the slide to be used for adding text
-    ///  - text: the text to be added to the slide
-    ///  - fontSettings: font settings
-    ///  - size: the size of the text region, the size given needs to honur the position value so that the content not to overflow
-    ///  - position: the postion of the text region
-    ///  - foregroundColor: the foregroundColor of the text
-    ///  - backgroundColor: the backgroundColor of the text
-    /// - Throws: GoogleSheetsError if the operation fails
-    /// - Returns: Operation status
+    ///   - slideId: The ID of the slide to add text to.
+    ///   - text: The text to be added to the slide.
+    ///   - fontSettings: Font settings to apply to the text.
+    ///   - size: The size of the text region.
+    ///   - position: The position of the text region.
+    ///   - foregroundColor: The foreground color of the text.
+    ///   - backgroundColor: The background color of the text.
+    /// - Returns: A string indicating the result of the operation.
+    /// - Throws: An error if the operation fails.
     func insertTextToSlide(
         slideId: String,
         text: String,
@@ -105,16 +111,22 @@ public struct GoogleSlides: Sendable {
                     createShape:
                         .init(
                             elementProperties: .init(
-                                size: size, position: position, objectId: slideId),
+                                size: size,
+                                position: position,
+                                objectId: slideId
+                            ),
                             objectId: id,
                             shapeType: .textBox,
-                        )),
+                        )
+                ),
                 .init(
                     insertText:
                         .init(
                             insertionIndex: 0,
                             objectId: id,
-                            text: text)),
+                            text: text
+                        )
+                ),
             ])
         if let fontSettings {
             result += try await batchUpdateSlides(
@@ -130,7 +142,8 @@ public struct GoogleSlides: Sendable {
                                     foregroundColor: foregroundColor?.color,
                                 ),
                                 textRange: .init(_type: .all)
-                            ))
+                            )
+                    )
                 ])
         }
         result += try await batchUpdateSlides(requests: [
@@ -150,14 +163,15 @@ public struct GoogleSlides: Sendable {
         return result
     }
 
-    /// Insert Image to slides
+    /// Inserts an image into a slide.
+    ///
     /// - Parameters:
-    ///  - slideId: the id of the slide to be used for adding image
-    ///  - imageUrl: the url of the image to be added to the slide
-    ///  - size: the size of the image region, the size given needs to honur the position value so that the content not to overflow
-    ///  - position: the postion of the image region
-    /// - Throws: GoogleSheetsError if the operation fails
-    /// - Returns: Operation status
+    ///   - slideId: The ID of the slide to add the image to.
+    ///   - imageUrl: The URL of the image to be added to the slide.
+    ///   - size: The size of the image region.
+    ///   - position: The position of the image region.
+    /// - Returns: A string indicating the result of the operation.
+    /// - Throws: An error if the operation fails.
     func insertImageToSlide(
         slideId: String,
         imageUrl: String,
@@ -171,12 +185,20 @@ public struct GoogleSlides: Sendable {
                     createImage: .init(
                         elementProperties: .init(size: size, position: position, objectId: slideId),
                         objectId: id,
-                        url: imageUrl))
+                        url: imageUrl
+                    )
+                )
             ])
     }
 }
 
 extension Components.Schemas.PageElementProperties {
+    /// Initializes `PageElementProperties` with the given size and position.
+    ///
+    /// - Parameters:
+    ///   - size: The size of the element.
+    ///   - position: The position of the element.
+    ///   - objectId: The object ID of the page element (optional).
     init(size: GoogleSlides.Size, position: GoogleSlides.Position, objectId: String? = nil) {
         self.init(
             pageObjectId: objectId,
@@ -185,8 +207,10 @@ extension Components.Schemas.PageElementProperties {
                 width: .init(magnitude: size.width, unit: .pt)
             ),
             transform: .init(
-                scaleX: 1, scaleY: 1,
-                translateX: position.x, translateY: position.y,
+                scaleX: 1,
+                scaleY: 1,
+                translateX: position.x,
+                translateY: position.y,
                 unit: .pt
             )
         )
@@ -194,6 +218,7 @@ extension Components.Schemas.PageElementProperties {
 }
 
 private extension RgbColor {
+    /// Converts the `RgbColor` to a `Components.Schemas.OptionalColor` for use in Google Slides API requests.
     var color: Components.Schemas.OptionalColor {
         .init(opaqueColor: .init(rgbColor: .init(blue: blue, green: green, red: red)))
     }

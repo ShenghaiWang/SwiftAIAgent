@@ -85,7 +85,8 @@ struct AIToolMacroTests {
         let sourceFile = Parser.parse(source: doccString)
         let parsedDoc = sourceFile.statements
             .compactMap { $0.item.as(FunctionDeclSyntax.self) }
-            .first!.parsedDoc
+            .first!
+            .parsedDoc
         #expect(parsedDoc.description == "Get weather of the city")
         #expect(parsedDoc.returns == "Weather of the city")
         #expect(parsedDoc.parameters == ["city": "The city", "date": "The date"])
@@ -105,7 +106,8 @@ struct AIToolMacroTests {
         let sourceFile = Parser.parse(source: doccString)
         let parsedDoc = sourceFile.statements
             .compactMap { $0.item.as(FunctionDeclSyntax.self) }
-            .first!.parsedDoc
+            .first!
+            .parsedDoc
         #expect(parsedDoc.description == "Get weather of the city")
         #expect(parsedDoc.returns == "Weather of the city")
         #expect(parsedDoc.parameters == ["city": "The city", "date": "The date"])
@@ -132,7 +134,8 @@ struct AIToolMacroTests {
         #expect(
             toolSchema?.parametersJsonSchema.compactJson == """
                 {"type":"object","required":["city","date"],"properties":{"city":{"type":"array","description":"The city","items":{"type":"string"}},"date":{"type":"string","description":"The date"}}}
-                """)
+                """
+        )
     }
 
     @Test("Test parsing func parameters with Customised type")
@@ -155,6 +158,7 @@ struct AIToolMacroTests {
         #expect(
             toolSchema?.parametersJsonSchema.compactJson == #"""
                 {"type":"object","required":["date"],"properties":{"date":\(WeatherDate.outputSchema)}}
-                """#)
+                """#
+        )
     }
 }

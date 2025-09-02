@@ -11,7 +11,6 @@ extension Array where Element == TriviaPiece {
     var docLineComments: [String] {
         compactMap(\.docLineComment)
     }
-
 }
 
 extension Trivia {

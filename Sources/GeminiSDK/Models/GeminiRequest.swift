@@ -261,7 +261,9 @@ extension GeminiRequest.GenerationConfig: Encodable {
         try container.encodeIfPresent(responseLogprobs, forKey: .responseLogprobs)
         try container.encodeIfPresent(logprobs, forKey: .logprobs)
         try container.encodeIfPresent(
-            enableEnhancedCivicAnswers, forKey: .enableEnhancedCivicAnswers)
+            enableEnhancedCivicAnswers,
+            forKey: .enableEnhancedCivicAnswers
+        )
         try container.encodeIfPresent(speechConfig, forKey: .speechConfig)
         try container.encodeIfPresent(thinkingConfig, forKey: .thinkingConfig)
         try container.encodeIfPresent(mediaResolution, forKey: .mediaResolution)

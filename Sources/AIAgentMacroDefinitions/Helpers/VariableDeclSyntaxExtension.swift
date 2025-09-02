@@ -29,6 +29,7 @@ extension VariableDeclSyntax {
             name: propertyName,
             schema: schema,
             required: schemaChain.required,
-            description: description)
+            description: description
+        )
     }
 }

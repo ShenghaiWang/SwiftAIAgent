@@ -63,7 +63,8 @@ struct GeminiSDKTests {
             functionCalls == [
                 "{\"name\":\"getWeather\",\"args\":{\"city\":\"Sydney\"}}",
                 "{\"name\":\"getWeather2\",\"args\":{\"city\":\"Melbourne\"}}",
-            ])
+            ]
+        )
     }
 
     @Test("Requesting function calls")
@@ -75,7 +76,8 @@ struct GeminiSDKTests {
                     .init(
                         name: "getWeather",
                         description: "Find the weather in the specified city",
-                        parametersJsonSchema: Location.outputSchema)
+                        parametersJsonSchema: Location.outputSchema
+                    )
                 ])
             ]
         )

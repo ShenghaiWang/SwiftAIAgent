@@ -28,7 +28,8 @@ public struct AIToolMacro: ExtensionMacro {
                 || declaration.is(ClassDeclSyntax.self)
         else {
             context.diagnose(
-                Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum))
+                Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum)
+            )
             return []
         }
 
@@ -70,7 +71,8 @@ public struct AIToolMacro: ExtensionMacro {
                 \#($0.compactJson)
                 """
                 """#
-            }.joined(separator: ",\n")
+            }
+            .joined(separator: ",\n")
 
         return
             #"""
@@ -89,8 +91,10 @@ public struct AIToolMacro: ExtensionMacro {
                 }
                 .joined(separator: ", ")
             let returnType =
-                function.signature.returnClause?.type.description.trimmingCharacters(
-                    in: .whitespacesAndNewlines) ?? "Void"
+                function.signature.returnClause?.type.description
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                ) ?? "Void"
             let typeCast =
                 "(\(paramTypes)) \(function.isAsyncFunction ? "async " : "")\(function.isThrowingFunction ? "throws " : "")-> \(returnType)"
             return #""\#(name)": self.\#(name) as \#(typeCast)"#
@@ -105,45 +109,48 @@ public struct AIToolMacro: ExtensionMacro {
     }
 
     private static func call(for functions: [FunctionDeclSyntax]) -> DeclSyntax {
-        let cases = functions.map { function in
-            let name = function.name.text
-            let params = function.signature.parameterClause.parameters
-            let paramCasts = params.enumerated().map { idx, param in
-                let type = param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
-                let label = param.firstName.text
-                let isOptional = type.hasSuffix("?")
-                if isOptional {
-                    // Optional type: allow missing data
-                    return
-                        "let \(label): \(type) = args[\"\(label)\"].flatMap { try? JSONDecoder().decode(\(type.replacingOccurrences(of: "?", with: "")).self, from: $0) }"
-                } else {
-                    // Non-optional type: require data
-                    return
-                        "let \(label) = try JSONDecoder().decode(\(type).self, from: args[\"\(label)\"]!)"
-                }
-            }.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: "\n")
-            let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
-            let tryKeyword = function.isThrowingFunction ? "try " : ""
-            let throwsKeyword = function.isThrowingFunction ? "throws " : ""
-            let awaitKeyword = function.isAsyncFunction ? "await " : ""
-            let asyncKeyword = function.isAsyncFunction ? "async " : ""
-            let fnType =
-                "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(asyncKeyword)\(throwsKeyword)-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
-            let guardArgs =
-                params.isEmpty
-                ? ""
-                : """
-                \(paramCasts)
-                """
-            let callArgs = params.isEmpty ? "" : paramNames
-            return
-                """
-                case "\(name)":
-                guard let fn = methodMap[methodName] as? \(fnType) else { return nil }
-                \(guardArgs)
-                return \(tryKeyword)\(awaitKeyword)fn(\(callArgs))
-                """
-        }.joined(separator: "\n")
+        let cases =
+            functions.map { function in
+                let name = function.name.text
+                let params = function.signature.parameterClause.parameters
+                let paramCasts = params.enumerated()
+                    .map { idx, param in
+                        let type = param.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let label = param.firstName.text
+                        let isOptional = type.hasSuffix("?")
+                        guard isOptional else {
+                            // Non-optional type: require data
+                            return
+                                "let \(label) = try JSONDecoder().decode(\(type).self, from: args[\"\(label)\"]!)"
+                        }
+                        // Optional type: allow missing data
+                        return
+                            "let \(label): \(type) = args[\"\(label)\"].flatMap { try? JSONDecoder().decode(\(type.replacingOccurrences(of: "?", with: "")).self, from: $0) }"
+                    }
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: "\n")
+                let paramNames = params.map { $0.firstName.text }.joined(separator: ", ")
+                let tryKeyword = function.isThrowingFunction ? "try " : ""
+                let throwsKeyword = function.isThrowingFunction ? "throws " : ""
+                let awaitKeyword = function.isAsyncFunction ? "await " : ""
+                let asyncKeyword = function.isAsyncFunction ? "async " : ""
+                let fnType =
+                    "(\(params.map { $0.type.description.trimmingCharacters(in: .whitespacesAndNewlines) }.joined(separator: ", "))) \(asyncKeyword)\(throwsKeyword)-> \(function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Void")"
+                let guardArgs =
+                    params.isEmpty
+                    ? ""
+                    : """
+                    \(paramCasts)
+                    """
+                let callArgs = params.isEmpty ? "" : paramNames
+                return
+                    """
+                    case "\(name)":
+                    guard let fn = methodMap[methodName] as? \(fnType) else { return nil }
+                    \(guardArgs)
+                    return \(tryKeyword)\(awaitKeyword)fn(\(callArgs))
+                    """
+            }
+            .joined(separator: "\n")
 
         return
             #"""

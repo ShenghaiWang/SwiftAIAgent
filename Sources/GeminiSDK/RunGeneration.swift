@@ -20,7 +20,8 @@ extension GeminiSDK {
             200..<300 ~= statusCode
         else {
             throw Error.invalidResponse(
-                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode)
+                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode
+            )
         }
         let functioncalls = try data.functionCalls()
         output.append(.functionCalls(functioncalls))

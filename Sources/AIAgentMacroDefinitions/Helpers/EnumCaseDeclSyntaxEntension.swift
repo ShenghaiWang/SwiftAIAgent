@@ -8,6 +8,7 @@ extension EnumCaseDeclSyntax {
         return .init(
             name: identifier,
             schema: "\"\(identifier)\"",
-            description: description)
+            description: description
+        )
     }
 }

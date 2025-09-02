@@ -33,7 +33,8 @@ extension GeminiSDK: AIAgentModel {
             tools: [.init(functionDeclarations: functionDeclarations)],
             modalities: modalities,
             inlineData: inlineData,
-            temperature: temperature)
+            temperature: temperature
+        )
         let result = try await run(request: request)
         return result.aiAgentOutput
     }
@@ -61,7 +62,8 @@ extension GeminiSDK: AIAgentModel {
             toolSchemas: toolSchemas,
             modalities: modalities,
             inlineData: inlineData,
-            temperature: temperature)
+            temperature: temperature
+        )
         if case let .text(jsonString) = result.firstText {
             let value = try JSONDecoder().decode(outputSchema, from: Data(jsonString.utf8))
             return [.strongTypedValue(value)] + result.allFunctionCallOutputs
@@ -87,7 +89,9 @@ extension String {
         var parametersJsonSchemaString: String?
         if let schemaDict = json["parametersJsonSchema"] as? [String: Any],
             let schemaData = try? JSONSerialization.data(
-                withJSONObject: schemaDict, options: .sortedKeys),
+                withJSONObject: schemaDict,
+                options: .sortedKeys
+            ),
             let schemaString = String(data: schemaData, encoding: .utf8)
         {
             parametersJsonSchemaString = schemaString
@@ -108,11 +112,11 @@ extension String {
 extension GeminiOutput {
     var aiAgentOutput: AIAgentOutput? {
         switch self {
-        case let .functionCalls(calls): .functionCalls(calls)
-        case let .strongTypedValue(value): .strongTypedValue(value)
-        case let .text(text): .text(text)
-        case let .image(data): .image(data)
-        case let .audio(data): .audio(data)
+            case let .functionCalls(calls): .functionCalls(calls)
+            case let .strongTypedValue(value): .strongTypedValue(value)
+            case let .text(text): .text(text)
+            case let .image(data): .image(data)
+            case let .audio(data): .audio(data)
         }
     }
 }
@@ -155,7 +159,8 @@ extension GeminiRequest {
             } else {
                 .init(
                     responseModalities: modalities?.map(\.modality),
-                    temperature: temperature)
+                    temperature: temperature
+                )
             }
         return GeminiRequest(contents: contents, generationConfig: generationConfig, tools: tools)
     }
@@ -170,10 +175,10 @@ extension InlineData {
 extension Modality {
     var modality: GeminiModality {
         switch self {
-        case .text: .text
-        case .image: .image
-        case .audio: .audio
-        case .unspecified: .unspecified
+            case .text: .text
+            case .image: .image
+            case .audio: .audio
+            case .unspecified: .unspecified
         }
     }
 }

@@ -36,11 +36,11 @@ public struct Workflow: Sendable {
 extension Workflow.Step {
     func run(prompt: String) async throws -> [AIAgentOutput] {
         switch self {
-        case let .single(agent): try await agent.run(prompt: prompt)
-        case let .sequence(steps): try await runSequence(steps: steps, prompt: prompt)
-        case let .parrallel(steps): try await runParrallel(steps: steps, prompt: prompt)
-        case let .conditional(condition, step):
-            try await runConditional(condition: condition, step: step, prompt: prompt)
+            case let .single(agent): try await agent.run(prompt: prompt)
+            case let .sequence(steps): try await runSequence(steps: steps, prompt: prompt)
+            case let .parrallel(steps): try await runParrallel(steps: steps, prompt: prompt)
+            case let .conditional(condition, step):
+                try await runConditional(condition: condition, step: step, prompt: prompt)
         }
     }
 
@@ -63,7 +63,11 @@ extension Workflow.Step {
         }
     }
 
-    func runConditional(condition: @Sendable (AIAgentOutput) -> Bool, step: Self, prompt: String)
+    func runConditional(
+        condition: @Sendable (AIAgentOutput) -> Bool,
+        step: Self,
+        prompt: String
+    )
         async throws -> [AIAgentOutput]
     {
         condition(.text(prompt))
@@ -84,36 +88,36 @@ extension Workflow: CustomStringConvertible {
 extension Workflow.Step: CustomStringConvertible {
     public var description: String {
         switch self {
-        case let .single(agent):
-            """
-            ===Workflow===
-            Step Agent: 
-            \(agent)
-            --------------------\n
-            """
-        case let .sequence(steps):
-            """
-            ===Workflow sequence steps===
-            Steps: 
-            \(steps)
-            --------------------\n
-            """
-        case let .parrallel(steps):
-            """
-            ===Workflow parrallel steps===
-            Steps: 
-            \(steps)
-            --------------------\n
-            """
-        case let .conditional(condition, step):
-            """
-            ===Workflow conditional step===
-            Condition: 
-            \(String(describing: condition))
-            Step: 
-            \(step)
-            --------------------\n
-            """
+            case let .single(agent):
+                """
+                ===Workflow===
+                Step Agent: 
+                \(agent)
+                --------------------\n
+                """
+            case let .sequence(steps):
+                """
+                ===Workflow sequence steps===
+                Steps: 
+                \(steps)
+                --------------------\n
+                """
+            case let .parrallel(steps):
+                """
+                ===Workflow parrallel steps===
+                Steps: 
+                \(steps)
+                --------------------\n
+                """
+            case let .conditional(condition, step):
+                """
+                ===Workflow conditional step===
+                Condition: 
+                \(String(describing: condition))
+                Step: 
+                \(step)
+                --------------------\n
+                """
         }
     }
 }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "298804c6fd4b6f3721803da3befbe9acf82ee672aace161081e20502a6546a26",
+  "originHash" : "d143011e4f0f11ab610added7a571b10fdf4135e551bf1308d7a7422719d7945",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ShenghaiWang/GoogleSwiftSDK.git",
       "state" : {
-        "revision" : "c05b850ba911368633b932bdf3fb7f9bb8f2e561",
-        "version" : "1.0.1"
+        "revision" : "ecf0d8311bccba6a905bc8eabfe2ab8d7f54b572",
+        "version" : "1.0.2"
       }
     },
     {

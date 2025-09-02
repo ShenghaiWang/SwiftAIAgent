@@ -10,7 +10,8 @@ struct ToolCallingValueTests {
             value:
                 """
                     {"name":"getWeather","args":{"city":"Sydney", "date": { "month":"Jan" }}}
-                """)!
+                """
+        )!
         let sydneyEncoded = try JSONEncoder().encode("Sydney")
         #expect(toolCallingValue.name == "getWeather")
         #expect(toolCallingValue.args["city"] == sydneyEncoded)
@@ -23,7 +24,8 @@ struct ToolCallingValueTests {
                 """
                 {"city":"Sydney""date":{"month":"Jan"}}
                 """,
-            ].contains(toolCallingValue.argsString)
+            ]
+            .contains(toolCallingValue.argsString)
         )
     }
 }

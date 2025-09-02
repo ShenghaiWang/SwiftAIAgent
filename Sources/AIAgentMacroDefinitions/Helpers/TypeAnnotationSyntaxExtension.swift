@@ -11,6 +11,7 @@ extension TypeAnnotationSyntax {
         return .init(
             type: type.typeName ?? "",
             itemsType: type.typeSchema,
-            required: required)
+            required: required
+        )
     }
 }

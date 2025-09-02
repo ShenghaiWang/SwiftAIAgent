@@ -27,7 +27,8 @@ public struct Fetch {
             200..<300 ~= statusCode
         else {
             throw Error.invalidResponse(
-                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode ?? 0)
+                responseStatusCode: (httpURLResponse as? HTTPURLResponse)?.statusCode ?? 0
+            )
         }
         guard let html = String(data: data, encoding: .utf8) else { return nil }
         let doc = try SwiftSoup.parse(html)

@@ -28,7 +28,8 @@ extension FunctionParameterSyntax {
             name: firstName.text,
             schema: schema,
             required: schemaChain.required,
-            description: "")
+            description: ""
+        )
     }
 
     var schemaChain: PropertySchemaParsed? {
@@ -41,6 +42,7 @@ extension FunctionParameterSyntax {
         return .init(
             type: type.typeName ?? "",
             itemsType: type.typeSchema,
-            required: required)
+            required: required
+        )
     }
 }

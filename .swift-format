@@ -1,11 +1,32 @@
 {
   "version": 1,
-  "lineLength": 100,
+  "lineLength": 180,
   "indentation": {
     "spaces": 4
   },
+  "lineBreakAroundMultilineExpressionChainComponents": true,
+  "lineBreakBeforeControlFlowKeywords": false,
+  "lineBreakBeforeEachArgument": true,
+  "lineBreakBeforeEachGenericRequirement": true,
+  "lineBreakBetweenDeclarationAttributes": true,
+  "prioritizeKeepingFunctionOutputTogether": true,
+  "indentSwitchCaseLabels": true,
   "maximumBlankLines": 1,
+  "multilineTrailingCommaBehavior": "alwaysUsed",
   "rules": {
-    "UseLetInEveryBoundCaseVariable": false
+    "AllPublicDeclarationsHaveDocumentation": true,
+    "AlwaysUseLiteralForEmptyCollectionInit": true,
+    "BeginDocumentationCommentWithOneLineSummary": true,
+    "DontRepeatTypeInStaticProperties": true,
+    "GroupNumericLiterals": true,
+    "NeverForceUnwrap": true,
+    "NeverUseForceTry": true,
+    "NeverUseImplicitlyUnwrappedOptionals": true,
+    "NoEmptyLinesOpeningClosingBraces": true,
+    "OmitExplicitReturns": true,
+    "UseLetInEveryBoundCaseVariable": false,
+    "UseEarlyExits": true,
+    "UseWhereClausesInForLoops": true,
+    "ValidateDocumentationComments" : true
   }
 }

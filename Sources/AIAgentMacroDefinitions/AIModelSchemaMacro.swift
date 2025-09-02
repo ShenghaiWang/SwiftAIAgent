@@ -23,7 +23,8 @@ public struct AIModelSchemaMacro: ExtensionMacro {
     ) throws -> [ExtensionDeclSyntax] {
         guard declaration.is(StructDeclSyntax.self) || declaration.is(EnumDeclSyntax.self) else {
             context.diagnose(
-                Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum))
+                Diagnostic(node: node, message: AIModelSchemaMacroDiagnostic.requiresStructOrEnum)
+            )
             return []
         }
 

@@ -107,13 +107,12 @@ public actor GoalManager {
 
     private func runAICommand<T: AIModelSchema>(_ command: String) async throws -> T {
         let result = try await managerAgent.run(prompt: command, outputSchema: T.self)
-        if case let .strongTypedValue(result) = result.allStrongTypedValues.first,
+        guard case let .strongTypedValue(result) = result.allStrongTypedValues.first,
             let task = result as? T
-        {
-            return task
-        } else {
+        else {
             throw Error.wrongResponseFormatFromAI
         }
+        return task
     }
 
     /// Clarifiy the goal
