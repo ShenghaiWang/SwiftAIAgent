@@ -1,5 +1,5 @@
 {
-  "originHash" : "d143011e4f0f11ab610added7a571b10fdf4135e551bf1308d7a7422719d7945",
+  "originHash" : "4b7b06d234a1b0db9228af7046da3f7cb4f420e4f946f58d8e22a0445915e34f",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ShenghaiWang/GoogleAPITokenManager.git",
       "state" : {
-        "revision" : "c0ded1c68496497ae304ef20cc0201b609500202",
-        "version" : "1.0.1"
+        "revision" : "846bc3191fdfcf147b9467a725b598187819934c",
+        "version" : "1.0.2"
       }
     },
     {
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ShenghaiWang/GoogleSwiftSDK.git",
       "state" : {
-        "revision" : "ecf0d8311bccba6a905bc8eabfe2ab8d7f54b572",
-        "version" : "1.0.2"
+        "revision" : "447d28f2b9d66bbab403769090f37a84ea986904",
+        "version" : "1.0.3"
       }
     },
     {
