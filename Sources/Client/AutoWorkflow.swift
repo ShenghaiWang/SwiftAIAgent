@@ -240,7 +240,7 @@ struct AutoWorkflow {
     init(model: AIAgentModel, example: AutoWorkflow.Example) async throws {
         self.model = model
         self.managerAgent = try await AIAgent(title: "Manager", model: model)
-        self.goalManager = await GoalManager(
+        self.goalManager = try await GoalManager(
             goal: example.goal,
             managerAgent: managerAgent,
             models: [model],
@@ -251,7 +251,7 @@ struct AutoWorkflow {
 
     func runInternal() async throws {
         do {
-            let result = try await goalManager.run(noFutherClarification: true)
+            let result = try await goalManager.run(skipClarification: true)
             print(result)
         } catch {
             if case let GoalManager.Error.needClarification(questions) = error {
@@ -262,7 +262,7 @@ struct AutoWorkflow {
                         .joined(separator: "\n")
                 )
                 let clarifications = readLine()
-                await goalManager.set(clarifications: [clarifications ?? ""])
+                await goalManager.addClarifications([clarifications ?? ""])
                 try await runInternal()
             } else {
                 print(error)
