@@ -37,12 +37,32 @@ public actor GoalManager {
         """
     }
 
+    private var strategyInstructions: String {
+        """
+        <goal>\(goal)</goal>
+        <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
+
+        Please decide the best strategy to achieve the above goal.
+
+        Some example strategies are:
+        - Reflection Strategy
+        - Iterative Refinement Strategy
+        - Divide and Conquer Strategy  
+        - Validation and Quality Assurance Strategy
+        - Adaptive Strategy Selection
+
+        Please note, you can not limited to use these strategies. 
+        Determine the best strategy for the goal based on your best knowledge.
+        """
+    }
+
     private var planInstructions: String {
         """
         <goal>\(goal)</goal>
         <clarifications>\(clarifications.joined(separator: "\n"))</clarifications>
 
-        You are an expert task planner with strategic thinking capabilities. Break this goal into executable subtasks for AI agents using advanced planning strategies.
+        You are an expert task planner with strategic thinking capabilities. 
+        Break this goal into executable subtasks for AI agents using the planning strategies specified.
 
         ## Core Planning Guidelines:
         - Create atomic, well-defined subtasks with clear success criteria
@@ -50,54 +70,6 @@ public actor GoalManager {
         - Assign appropriate tools based on task requirements
         - Set reasonable temperature values based on creativity needs (0.0-1.0)
         - Determine if tasks can run in parallel or must be sequential
-
-        ## Strategic Planning Approaches:
-
-        ### 1. Reflection Strategy
-        When the goal involves complex problem-solving, learning, or quality assurance:
-        - **Include dedicated reflection subtasks** that analyze previous outputs from other agents
-        - Add validation steps to verify intermediate results before proceeding
-        - Create feedback loops between related subtasks using sequential dependencies
-        - **Examples of reflection subtasks:**
-          - "Review the generated code and identify potential issues, bugs, or improvements"
-          - "Analyze the research findings and assess their relevance and quality"
-          - "Evaluate the proposed solution against the original requirements"
-          - "Critique the creative output and suggest refinements"
-
-        ### 2. Iterative Refinement Strategy  
-        For goals requiring progressive improvement or optimization:
-        - Break work into iterative cycles with **explicit review and refinement subtasks**
-        - Include subtasks for gathering feedback and making improvements
-        - Plan multiple passes with increasing quality standards
-        - **Sequential subtask pattern examples:**
-          - "Create initial draft" → "Review draft and identify gaps/issues" → "Refine based on review feedback"
-          - "Generate first solution" → "Analyze solution effectiveness" → "Optimize based on analysis"
-          - "Research initial findings" → "Evaluate research quality and coverage" → "Expand research in identified gaps"
-
-        ### 3. Divide and Conquer Strategy
-        For complex, multi-faceted goals:
-        - Decompose into independent, parallelizable components
-        - Create specialized subtasks for different aspects
-        - Plan integration steps to combine results
-        - Example: Separate subtasks for research, analysis, and synthesis
-
-        ### 4. Validation and Quality Assurance Strategy
-        For goals requiring high reliability or accuracy:
-        - **Include dedicated verification subtasks** after key operations
-        - Add cross-validation between different approaches using separate agents
-        - Plan testing and validation steps as explicit subtasks
-        - **Quality assurance subtask examples:**
-          - "Verify calculation results using alternative method"
-          - "Test the implementation with edge cases and boundary conditions"
-          - "Cross-check research sources for accuracy and bias"
-          - "Validate the solution meets all specified requirements"
-
-        ### 5. Adaptive Strategy Selection
-        Choose strategies based on goal characteristics:
-        - **Creative tasks**: Higher temperature, parallel exploration, reflection on alternatives
-        - **Analytical tasks**: Lower temperature, sequential validation, systematic verification
-        - **Research tasks**: Iterative deepening, source validation, synthesis steps
-        - **Implementation tasks**: Incremental building, testing at each step, integration validation
 
         ## Advanced Planning Considerations:
 
@@ -132,26 +104,6 @@ public actor GoalManager {
         - **0.0-0.3**: Factual, analytical, or precise tasks
         - **0.4-0.6**: Balanced reasoning and creativity
         - **0.7-1.0**: Creative, exploratory, or brainstorming tasks
-
-        ## How to Structure Reflection Subtasks:
-
-        When including reflection or validation subtasks, structure them as separate agents that:
-        1. **Receive input from previous agents** (use sequential execution, not parallel)
-        2. **Have clear analytical instructions** like "Review the output from the previous step and..."
-        3. **Use appropriate temperature** (typically 0.0-0.4 for analytical reflection)
-        4. **Provide actionable feedback** that subsequent agents can use
-        5. **Have specific success criteria** for what constitutes good reflection
-
-        **Example reflection subtask structure:**
-        ```
-        {
-          "name": "Code Review and Analysis",
-          "details": "Review the code generated by the previous agent. Analyze it for: 1) Correctness and logic errors, 2) Code quality and best practices, 3) Performance considerations, 4) Security vulnerabilities. Provide specific, actionable feedback for improvements.",
-          "temperature": 0.2,
-          "tools": ["code_analysis"],
-          "condition": null
-        }
-        ```
 
         ## Output Requirements:
         Return a comprehensive execution plan that:
@@ -253,14 +205,23 @@ public actor GoalManager {
     /// - Returns: Structured task plan with subtasks and resource assignments
     /// - Throws: Planning or LLM errors
     public func plan() async throws -> AITask {
-        logger.debug("Generating execution plan...")
-        let task: AITask = try await runAICommand(planInstructions)
+        let strategy = try await makeStrategy()
 
-        // Validate the generated plan
+        logger.debug("Generating execution plan...")
+        let task: AITask = try await runAICommand(planInstructions + "\n<strategy>\(strategy)</strategy>")
+
         try validatePlan(task)
 
         logger.debug("Plan generated successfully with \(task.subTasks?.count ?? 0) subtasks")
         return task
+    }
+
+    private func makeStrategy() async throws -> String {
+        logger.debug("Generating strategy...")
+        let strategy: AIStrategy = try await runAICommand(strategyInstructions)
+
+        logger.debug("Generated strategy: \(strategy.details)")
+        return strategy.details
     }
 
     /// Execute the planned task workflow
