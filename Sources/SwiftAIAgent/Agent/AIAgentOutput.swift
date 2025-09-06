@@ -5,7 +5,7 @@ import Foundation
 public enum AIAgentOutput: Sendable {
     case text(String)
     case functionCalls([String])
-    case strongTypedValue(Sendable)
+    case strongTypedValue(Sendable & Codable)
     case image(Data)
     case audio(Data)
 }

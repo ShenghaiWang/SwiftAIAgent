@@ -109,3 +109,23 @@ extension Tool.Content {
         }
     }
 }
+
+extension MCPServer: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+            case let .stdio(command, args, description):
+                """
+                    MCPServer:
+                    command: \(command)
+                    args: \(args)
+                    description: \(description)
+                """
+            case let .http(url, _, description):
+                """
+                    MCPServer:
+                    url: \(url)
+                    description: \(description)
+                """
+        }
+    }
+}

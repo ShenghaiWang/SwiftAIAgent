@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol AIModelSchema: Decodable, Sendable {
+public protocol AIModelSchema: Codable, Sendable {
     static var outputSchema: String { get }
 }
 

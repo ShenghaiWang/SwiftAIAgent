@@ -187,7 +187,7 @@ public struct GoogleSearch {
         self.key = key
     }
 
-    /// Search internet using Google search engine
+    /// Search internet using Google search engine. Need to work with `fetch` tool to fetch the content of the links in the search result.
     /// - Parameter request: the request for the search
     /// - Returns: the content of the search result
     public func search(request: Request) async throws -> Response {

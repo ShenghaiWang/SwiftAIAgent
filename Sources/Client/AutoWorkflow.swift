@@ -37,7 +37,6 @@ struct AutoWorkflow {
                 case .summariseAIHistory:
                     """
                     - Summarise AI history
-                    - gemerate an image for the article
                     - save it in a markdow file 
                     """
                 case .summariseMeetingWithImage:
@@ -93,7 +92,7 @@ struct AutoWorkflow {
                 case .getGitHubRepoTags:
                     """
                     - get all the tags of this repo https://github.com/ShenghaiWang/SwiftAIAgent.git.
-                    - save it in a markdown file
+                    - save it in a local markdown file
                     """
                 case .autoDocs:
                     """
@@ -172,7 +171,10 @@ struct AutoWorkflow {
                         GoogleSearch(cx: cx, key: key),
                         Fetch(),
                     ]
-                case .getGitHubRepoTags: []
+                case .getGitHubRepoTags:
+                    [
+                        FileIO(baseFolder: baseFolder)
+                    ]
                 case .addImageAndTextToSlides:
                     [
                         try GoogleSlides(serviceAccount: googleServiceAccount, presentationId: googlePresentationId)

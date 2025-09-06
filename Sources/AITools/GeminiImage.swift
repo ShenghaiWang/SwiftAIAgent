@@ -50,6 +50,6 @@ public struct GeminiImage {
         let fileName = "\(UUID().uuidString).png"
         let fileURL = URL(fileURLWithPath: baseFolder).appendingPathComponent(fileName)
         try data.write(to: fileURL)
-        return fileName
+        return "The image was successfully generated, and is save to `\(fileName)`"
     }
 }

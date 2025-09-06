@@ -68,7 +68,7 @@ public struct GoogleSlides: Sendable, GoogleClient {
             presentationId: presentationId,
             requests: requests
         )
-        return "\(result)"  // Ignore error for now
+        return "Successfully updated slides: \(result)"
     }
 
     /// Creates a new slide in the current presentation.
@@ -80,7 +80,7 @@ public struct GoogleSlides: Sendable, GoogleClient {
         _ = try await batchUpdateSlides(requests: [
             .init(createSlide: .init(objectId: id))
         ])
-        return id
+        return "New slide created with ID: `\(id)`"
     }
 
     /// Inserts text into a slide.
