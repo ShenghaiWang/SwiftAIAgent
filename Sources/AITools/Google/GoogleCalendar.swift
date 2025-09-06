@@ -76,6 +76,6 @@ public struct GoogleCalendar: Sendable, GoogleClient {
             location: location,
             attendees: attendees
         )
-        return "Done: \(result)"
+        return "Successfully inserted event: \(result)"
     }
 }

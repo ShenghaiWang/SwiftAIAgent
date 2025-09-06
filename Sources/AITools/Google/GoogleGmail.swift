@@ -43,6 +43,6 @@ public struct GoogleGmail: Sendable, GoogleClient {
             subject: subject,
             body: body
         )
-        return "\(result)"
+        return "Successfully created draft: \(result)"
     }
 }

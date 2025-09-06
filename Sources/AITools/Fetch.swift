@@ -32,6 +32,10 @@ public struct Fetch {
         }
         guard let html = String(data: data, encoding: .utf8) else { return nil }
         let doc = try SwiftSoup.parse(html)
-        return try doc.text()
+        return
+            """
+            Content of page of url:
+            \(try doc.text())
+            """
     }
 }

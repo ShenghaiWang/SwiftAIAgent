@@ -51,7 +51,7 @@ public actor GoalManager {
         - Validation and Quality Assurance Strategy
         - Adaptive Strategy Selection
 
-        Please note, you can not limited to use these strategies. 
+        Please note, you are not limited to use these strategies, feel free to use any strategies that are proper. 
         Determine the best strategy for the goal based on your best knowledge.
         """
     }
@@ -71,28 +71,6 @@ public actor GoalManager {
         - Set reasonable temperature values based on creativity needs (0.0-1.0)
         - Determine if tasks can run in parallel or must be sequential
 
-        ## Advanced Planning Considerations:
-
-        ### Error Handling and Resilience:
-        - Plan fallback subtasks for critical operations
-        - Include error detection and recovery steps
-        - Consider alternative approaches for high-risk tasks
-
-        ### Resource Optimization:
-        - Balance parallel execution with resource constraints
-        - Prioritize critical path tasks
-        - Consider computational complexity and time requirements
-
-        ### Context Preservation:
-        - Ensure subtasks maintain necessary context from previous steps
-        - Plan information handoff between sequential tasks
-        - Include context validation where needed
-
-        ### Quality Gates:
-        - Define clear success criteria for each subtask
-        - Include quality checkpoints at key milestones
-        - Plan review and approval steps where appropriate
-
         ## Tool and Resource Assignment:
         Available Tools:
         \(tools.toolDefinitions.joined(separator: "\n"))
@@ -104,15 +82,6 @@ public actor GoalManager {
         - **0.0-0.3**: Factual, analytical, or precise tasks
         - **0.4-0.6**: Balanced reasoning and creativity
         - **0.7-1.0**: Creative, exploratory, or brainstorming tasks
-
-        ## Output Requirements:
-        Return a comprehensive execution plan that:
-        1. Applies appropriate strategic approaches based on the goal
-        2. **Includes explicit reflection, validation, or iteration subtasks where beneficial**
-        3. Structures reflection subtasks as separate agents with clear analytical instructions
-        4. Optimizes for both efficiency and quality
-        5. Provides clear task dependencies and execution order
-        6. Assigns appropriate tools and temperature settings
 
         Use the specified JSON schema for your response.
         """
@@ -233,7 +202,7 @@ public actor GoalManager {
         let workflow = try await buildWorkflow(for: task)
 
         logger.debug("Starting workflow execution...")
-        let results = try await workflow.run(prompt: buildExecutionPrompt(for: task))
+        let results = try await workflow.run(prompt: "Start running the workflow")
 
         logger.debug("Workflow execution completed with \(results.count) outputs")
         return results
@@ -266,20 +235,6 @@ public actor GoalManager {
         for subtask in subTasks where subtask.temperature < 0.0 || subtask.temperature > 2.0 {
             logger.warning("Subtask '\(subtask.name)' has unusual temperature: \(subtask.temperature)")
         }
-    }
-
-    private func buildExecutionPrompt(for task: AITask) -> String {
-        """
-        Execute the following task plan:
-
-        Goal: \(goal)
-        Task: \(task.name)
-        Details: \(task.details)
-
-        \(clarifications.isEmpty ? "" : "Clarifications: \(clarifications.joined(separator: "; "))")
-
-        Begin execution with the planned subtasks.
-        """
     }
 
     // MARK: - Public State Management
@@ -384,8 +339,12 @@ public actor GoalManager {
     private func configureAgentDependencies(agents: [AIAgent], task: AITask) async throws {
         // TODO: Implement sophisticated dependency management
         // For now, create a simple sequential dependency chain
-        for (index, agent) in agents.enumerated() where index > 0 {
-            await agent.add(input: agents[index - 1].id)
+        for (index, agent) in agents.enumerated() {
+            var addedIndex = index - 1
+            while addedIndex > 0 {
+                await agent.add(input: agents[addedIndex].id)
+                addedIndex -= 1
+            }
         }
     }
 
