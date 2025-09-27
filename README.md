@@ -114,7 +114,7 @@ extension AITask: AIModelSchema {
 
 ### Define tools
 
-Once mark a type using `@AITool`, all the functions of that type that are not private will be made availbe to LLM. 
+Once mark a type using `@AITool`, all the functions of that type that are not private will be made available to LLM. 
 
 ```swift
 @AITool
