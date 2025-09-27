@@ -12,8 +12,8 @@ struct AIAgentOutputFileTests {
     func saveAndReadText() throws {
         let output = AIAgentOutput.text("Hello, world!")
         let filePath = try output.saveToFile()
-        let readOutput = try output.readFromFile(filePath)
-        #expect(readOutput.output == "Hello, world!")
+        let readOutput = try AIAgentOutput.readFromFile(filePath)
+        #expect(readOutput?.output == "Hello, world!")
     }
 
     @Test("Save and read function calls output")
@@ -21,24 +21,17 @@ struct AIAgentOutputFileTests {
         let calls = ["func1", "func2"]
         let output = AIAgentOutput.functionCalls(calls)
         let filePath = try output.saveToFile()
-        let readOutput = try output.readFromFile(filePath)
-        #expect(readOutput.output == calls.joined(separator: "||"))
+        let readOutput = try AIAgentOutput.readFromFile(filePath)
+        #expect(readOutput?.output == nil)
     }
 
     @Test("Save and read strong typed value output")
     func saveAndReadStrongTypedValue() throws {
-        StrongTypedValueRegistry.register(DummyStruct.self)
         let dummy = DummyStruct(value: "test123")
         let output = AIAgentOutput.strongTypedValue(dummy)
         let filePath = try output.saveToFile()
-        let readOutput = try output.readFromFile(filePath)
-        if case let .strongTypedValue(decoded) = readOutput,
-            let decodedDummy = decoded as? DummyStruct
-        {
-            #expect(decodedDummy == dummy)
-        } else {
-            #expect(Bool(false))
-        }
+        let readOutput = try AIAgentOutput.readFromFile(filePath)
+        #expect(readOutput?.output == "{\"value\":\"test123\"}")
     }
 
     @Test("Save and read image output")
@@ -46,7 +39,7 @@ struct AIAgentOutputFileTests {
         let data = Data([0x01, 0x02, 0x03])
         let output = AIAgentOutput.image(data)
         let filePath = try output.saveToFile()
-        let readOutput = try output.readFromFile(filePath)
+        let readOutput = try AIAgentOutput.readFromFile(filePath)
         if case let .image(readData) = readOutput {
             #expect(readData == data)
         } else {
@@ -59,21 +52,11 @@ struct AIAgentOutputFileTests {
         let data = Data([0x0A, 0x0B, 0x0C])
         let output = AIAgentOutput.audio(data)
         let filePath = try output.saveToFile()
-        let readOutput = try output.readFromFile(filePath)
+        let readOutput = try AIAgentOutput.readFromFile(filePath)
         if case let .audio(readData) = readOutput {
             #expect(readData == data)
         } else {
             #expect(Bool(false))
         }
-    }
-
-    @Test("Unregistered strong typed value returns text output")
-    func unregisteredStrongTypedValueReturnsText() throws {
-        struct Unregistered: Codable, Sendable { let foo: Int }
-        let value = Unregistered(foo: 42)
-        let output = AIAgentOutput.strongTypedValue(value)
-        let filePath = try output.saveToFile()
-        let readOutput = try output.readFromFile(filePath)
-        #expect(readOutput.output == "[Unregistered strong typed value: Unregistered]")
     }
 }

@@ -10,11 +10,10 @@ struct WorkflowTests {
         let step = Workflow.Step.single(agent)
         let workflow = Workflow(step: step)
         let result = try await workflow.run(prompt: "hello world")
-        print(result)
         #expect(
             result.allTexts.joined(separator: "\n") == """
                 Agent 1:
-                <result_of_the_previous_step>hello world</result_of_the_previous_step>
+                hello world
                 """
         )
     }
@@ -29,8 +28,8 @@ struct WorkflowTests {
         #expect(
             result.allTexts.joined(separator: "\n") == """
                 Agent 2:
-                <result_of_the_previous_step>Agent 1:
-                <result_of_the_previous_step>hello world</result_of_the_previous_step></result_of_the_previous_step>
+                Agent 1:
+                hello world
                 """
         )
     }
@@ -45,21 +44,21 @@ struct WorkflowTests {
         #expect(
             result.allTexts.joined(separator: "\n") == """
                 Agent 1:
-                <result_of_the_previous_step>hello world</result_of_the_previous_step>
+                hello world
                 Agent 2:
-                <result_of_the_previous_step>hello world</result_of_the_previous_step>
+                hello world
                 """
                 || result.allTexts.joined(separator: "\n") == """
                     Agent 2:
-                    <result_of_the_previous_step>hello world</result_of_the_previous_step>
+                    hello world
                     Agent 1:
-                    <result_of_the_previous_step>hello world</result_of_the_previous_step>
+                    hello world
                     """
         )
     }
 
     @Test(arguments: [
-        (true, "Agent 1:\n<result_of_the_previous_step>hello world</result_of_the_previous_step>"),
+        (true, "Agent 1:\nhello world"),
         (false, ""),
     ])
     func testConditionalWorkflow(condition: Bool, output: String) async throws {

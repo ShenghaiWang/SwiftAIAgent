@@ -213,7 +213,6 @@ public final actor AIAgent: Sendable {
             }
         }
         contents.append(prompt)
-        contents.append("<instruction>Please execute the task based on the context, instruction and results from other agents.</instruction>")
         return contents.joined()
     }
 

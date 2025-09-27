@@ -1,22 +1,5 @@
 import Foundation
 
-// Wrapper for storing strong typed value with type name
-private struct StrongTypedValueFileWrapper: Codable {
-    let typeName: String
-    let jsonData: Data
-}
-
-// Registry for decoding strong typed values
-public actor StrongTypedValueRegistry {
-    public static var decoders: [String: (Data) -> (Sendable & Codable)?] = [:]
-    public static func register<T: Sendable & Codable>(_ type: T.Type, typeName: String? = nil) {
-        let name = typeName ?? String(describing: type)
-        decoders[name] = { data in
-            try? JSONDecoder().decode(type, from: data)
-        }
-    }
-}
-
 extension AIAgentOutput {
     func saveToFile() throws -> String {
         let tempDirectoryURL = FileManager.default.temporaryDirectory
@@ -28,13 +11,11 @@ extension AIAgentOutput {
                 return textFileURL.path
             case .functionCalls:
                 return "No need to save function calls"
-            case .strongTypedValue(let value):
-                let valueFileURL = fileURL.appendingPathExtension("strongTypedValue")
-                let typeName = String(describing: type(of: value))
+            case .strongTypedValue(let value):  // Save it in json string format
+                let valueFileURL = fileURL.appendingPathExtension("txt")
                 let jsonData = try JSONEncoder().encode(value)
-                let wrapper = StrongTypedValueFileWrapper(typeName: typeName, jsonData: jsonData)
-                let wrapperData = try JSONEncoder().encode(wrapper)
-                try wrapperData.write(to: valueFileURL)
+                let string = String(data: jsonData, encoding: .utf8)!
+                try string.write(to: valueFileURL, atomically: true, encoding: .utf8)
                 return valueFileURL.path
             case .image(let data):
                 let imageFileURL = fileURL.appendingPathExtension("imageData")
@@ -58,15 +39,6 @@ extension AIAgentOutput {
                 let data = try Data(contentsOf: url)
                 let array = try JSONDecoder().decode([String].self, from: data)
                 return .functionCalls(array)
-            case "strongTypedValue":
-                let data = try Data(contentsOf: url)
-                let wrapper = try JSONDecoder().decode(StrongTypedValueFileWrapper.self, from: data)
-                guard let decoder = StrongTypedValueRegistry.decoders[wrapper.typeName],
-                    let value = decoder(wrapper.jsonData)
-                else {
-                    return .text("[Unregistered strong typed value: \(wrapper.typeName)]")
-                }
-                return .strongTypedValue(value)
             case "imageData":
                 let data = try Data(contentsOf: url)
                 return .image(data)
